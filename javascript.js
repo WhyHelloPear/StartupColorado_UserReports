@@ -1,0 +1,235 @@
+<style>
+  .story-intro-wrapper .story-intro {
+    overflow: hidden;
+    background: #fff;
+    padding: 30px 0 0 20px;
+    margin-bottom: 32px;
+  }
+  .story-intro-wrapper .left-image {
+    float: left;
+    width: 26%;
+  }
+  .story-intro-wrapper .left-image img {
+    display: block;
+  }
+  .story-intro-wrapper .right-text {
+    float: left;
+    width: 74%;
+    padding-left: 20px;
+    font-size: 18px;
+    line-height: 1.25;
+  }
+  .story-intro-wrapper .right-text a {
+    color: #D2002F;
+  }
+  .story-intro-wrapper .right-text a:hover {
+    opacity: 0.7;
+  }
+  .story-intro-wrapper .right-text p:last-child {
+    margin-bottom: 0;
+  }
+  .story-intro-wrapper .line {
+    height: 2px;
+    margin-bottom: 25px;
+    margin-left: 20px;
+    background: #204379;
+  }
+
+  @media (max-width: 767px) {
+    .story-intro-wrapper .left-image,
+    .story-intro-wrapper .right-text {
+      float: none;
+      width: 100%;
+    }
+    .story-intro-wrapper .right-text {
+      padding-left: 0;
+      padding-top: 15px;
+    }
+    .story-intro-wrapper .left-image img {
+      width: 100%;
+    }
+  }
+  
+  .news-podcast .container--right {
+    background: #fff;
+    padding: 0 30px 20px 10px;
+  }
+  @media (max-width: 44.9375em) {
+    .news-podcast .palm--soft--right {
+      padding-right: 0 !important;
+    }
+  }
+
+  .page-news .network-sidebar__title-section {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .page-news .network-sidebar__menu li {
+    display: inline-block;
+    background: #fff;
+    padding: 2px 10px;
+    margin-right: 7px;
+    margin-bottom: 8px;
+    border: solid 1px #efefef;
+  }
+
+  .page-news .cat-items-clone {
+    margin-bottom: 40px;
+  }
+  .page-news .network-sidebar__title-section.cat-title {
+    margin-bottom: 5px !important;
+  }
+  
+  /* Fix old bugs */
+  @media (max-width: 44.9375em) {
+    .page-news .network-sidebar {
+      bottom: auto !important;
+      top: auto !important;
+      z-index: 99 !important;
+      position: fixed !important;
+    }
+    .page-news #sticky-wrapper {
+      height: auto !important;
+    }
+  }
+
+  /* For logged user */
+  .loggedIn.news-podcast .story-intro-wrapper .story-intro {
+    padding: 0;
+  }
+  .loggedIn.news-podcast .story-intro-wrapper .line {
+    margin-left: 0;
+  }
+  .loggedIn.news-podcast .grid__item.nine-twelfths {
+    padding: 30px;
+    background: #fff;
+  }
+
+  .loggedIn.page-news .network-sidebar__title-section.cat-title {
+    margin-bottom: 12px !important;
+  }
+  @media (max-width: 44.9375em) {
+    .loggedIn.page-news .loggedIn-cat-items-clone {
+      display: none;
+    }
+  }
+</style>
+<div class="story-intro-wrapper" style="display: none;">
+  <div class="story-intro">
+    <div class="inner">
+      <div class="left-image">
+        <img src="https://d21hwc2yj2s6ok.cloudfront.net/assets/uploads/36061/asset/Startup-Colorado-Podcast-Graphic-250px.jpg?1603248007" alt="Startup Colorado">
+      </div>
+      <div class="right-text">
+        <p>
+          At Startup Colorado, we work with change agents across the state who are dedicated to building for rural communities. They may be small, but their
+          stories are big. We’re chatting with entrepreneurs and community champions responding to the ongoing COVID-19 crisis in innovative and inspiring ways. If you know of an entrepreneur rising to this unprecedented occasion, let us know. We’d love to tell their story.
+        </p>
+        <p>
+          Email your idea to <a href="mailto:startupco@colorado.edu">startupco@colorado.edu</a>
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="line"></div>
+</div>
+
+<div class="cat-items-clone" style="display: none;">
+  <div class="network-sidebar__title-section cat-title">Podcast</div>
+  <div class="network-sidebar__menu">
+    <ul>
+      <li>
+        <a class="block soft-quarter--ends color-dark-gray cat-title" href="/news?category_id=4112">Podcast</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="loggedIn-cat-items-clone" style="display: none;">
+  <div class="network-sidebar__title-section cat-title">Podcast</div>
+  <div class="content-sidebar__tags">
+    <a href="/news?category_id=4112"><span class="tag-m tag-m--medium tag-m--wrap cat-title">Podcast</span></a>
+  </div>
+</div>
+<script>
+  $(function() {
+    function publicView() {
+      if (window.__HB_USER__) return; // do nothing if logged in user
+      if (window.location.pathname != '/news' && window.location.pathname != '/news/') return;
+
+      var isNewsCat = false;
+      var isPodcast = false;
+      $('body').addClass('page-news');
+
+      if (window.location.search.indexOf('?category_id=') > -1) {
+        isNewsCat = true;
+        $('body').addClass('news-cat');
+
+        if (window.location.search.indexOf('?category_id=4112') > -1) {
+          isPodcast = true;
+          $('body').addClass('news-podcast');
+        }
+      } else {
+        $('body').addClass('news-main');
+      }
+
+      // prepend graphic image and text on top
+      if (isPodcast) {
+        var $html = $('<div class="story-intro-wrapper"></div>');
+        $html.html( $('.story-intro-wrapper').html() );
+        $('.container--right').prepend($html);
+      }
+
+      // prepend podcast item in left sidebar
+      var $html = $('<div class="js-content-side-container network-sidebar cat-items-clone"></div>');
+      $html.html( $('.cat-items-clone').html() );
+      $('.container--right').prev('.grid__item').prepend($html);
+    }
+    publicView();
+    
+    $(window).on('load', function() {
+      $(document).on('click', 'a[href^="/news"]', function() {
+        window.location.href = $(this).attr('href');
+        return;
+      });
+
+      function loggedInView() {
+        if (!window.__HB_USER__) return; // do nothing if guest user
+        $('body').addClass('loggedIn');
+
+        if (window.location.pathname != '/news' && window.location.pathname != '/news/') return;
+          
+        var isNewsCat = false;
+        var isPodcast = false;
+        $('body').addClass('page-news');
+
+        if (window.location.search.indexOf('?category_id=') > -1) {
+          isNewsCat = true;
+          $('body').addClass('news-cat');
+
+          if (window.location.search.indexOf('?category_id=4112') > -1) {
+            isPodcast = true;
+            $('body').addClass('news-podcast');
+          }
+        } else {
+          $('body').addClass('news-main');
+        }
+
+        // prepend graphic image and text on top
+        if (isPodcast) {
+          var $html = $('<div class="story-intro-wrapper"></div>');
+          $html.html( $('.story-intro-wrapper').html() );
+          $('.grid__item.nine-twelfths').prepend($html);
+        }
+
+        // prepend podcast item in left sidebar
+        var $html = $('<div class="network-sidebar__menu loggedIn-cat-items-clone"></div>');
+        $html.html( $('.loggedIn-cat-items-clone').html() );
+        $('.network-sidebar').prepend($html);
+      }
+      setTimeout(function() {
+        loggedInView();
+      }, 3300);
+    });
+   });
+</script>
