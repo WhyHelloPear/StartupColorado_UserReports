@@ -5,6 +5,13 @@ import operator
 # Eventually we’ll want to create user lists for group moderators to send targeted email campaigns to.
 # Those will likely start on a case by case basis, so I’ll let you know when we have a request.
 
+class Directory:
+	def __init__(self):
+		users = []
+		groups = []
+		expertise = []
+		industry = []
+		interests = []
 
 class User:
 	def __init__(self, uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests):
@@ -30,9 +37,11 @@ def fix_list(list):
 			result.append(item)
 	return result
 
+def analysis(users):
+	for user in users:
+		print(user.last_name+","+user.first_name+": "+str(user.score))
 
-def main():
-
+def read_users():
 	users = []
 
 	with open('data/user_export.csv', newline='') as csvfile:
@@ -54,7 +63,12 @@ def main():
 				last_active = row[41]
 				created = row[44]
 				count = row[40]
-				score = row[119]
+
+				score = 0
+				if row[119] != '':
+					score = int(row[119])
+
+
 				groups = fix_list(row[117].split(","))
 				expertise = fix_list(row[124].split(","))
 				industry = fix_list(row[128].split(","))
@@ -64,7 +78,13 @@ def main():
 				users.append(user)
 			i += 1
 
-	print(len(users))
+	return users
+
+
+def main():
+
+	users = read_users()
+	analysis(users)
 
 	with open("./results.csv", "w") as csv_file:
 		writer = csv.writer(csv_file, delimiter=',')
