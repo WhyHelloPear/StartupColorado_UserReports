@@ -1,33 +1,85 @@
 Personal Tasks:
 
 	User Reports:
+		
 		1) Currently, reports are generated for every unique interest, expertise, group, resource, and industry
+			
 			a) Every user that falls under the unique categories mentioned above are placed in the corresponding csv report file
+				
 				i) Users are sorted by descending activity score
 		
+		
 		2) Future Possibilities:
+			
 			a) We can look at a user's interests and match them to other users (those who are relitively active) whom have a relating expertise, resource, or industry and suggest connections between users
+
 				i) We can also consider user location as well
+			
 			b) We can create email lists based on the recommendations from (2,a) to send out to unique users that suggest further activity/connection within the site
+			
 			c) We can suggest users to join groups that are relavent to their interests, resources, industry
+			
 			d) We can create email lists of users with low activity score, or those who have been inactive for a certain period of time, suggesting them to visit/participate within the site
 			
 
 	Help Desk page:
+		
 		1) How do we actually create an html page to start working with?
+			
 			a) I see that the design tab is there and serves as a basic template, but I'm unaware how to create the source code to start working/implementing this
 
 	Co-working page:
+		
 		1) Access to image hosting for the site.
+			
 			a) Where are we hosting the images. Does it matter where the images are being hosted? Public? Private?
 			
 	Podcasts:
+		
 		1) I haven't forgotten about this task, just have been focussing on the report generation
 		
 	Mobile Page Formatting:
+		
 		1) Is this something I should continue to hold off on? Or should I work on a single page (coworking) to show why this would be an important issue to work on?
 
 
 
 
 Discussion Notes:
+
+	Help Desk page:
+			
+		1) Use the tabular design on hivebrite page
+
+		2)Features header image, help button, and sections for 3 videos
+
+		3) have button hyperlinked to type form
+
+	User Reports:
+
+	create a report for each group (w/ exclusions from specified groups [help desk, policy, moderators])
+		interests, industry, location
+
+	where people are, what position they are and the clusters they fall into
+
+		understanding their industry and their levels of expertise
+
+		MAKE IT EASIER TO READ
+
+			focus on statistics point of view; numbers and percetnages of users
+
+	hyperlinks can be generated from user profiles with the user ID's with the user/[USERID]
+
+
+	per group:
+		found % of people within certain interests, industries, etc
+			complete breakdown of who (what kind of people) is in a group
+
+	Mobile Page Formatting:
+		
+		1) Pause until app comes out.
+
+	Podcasts:
+		
+		1) Pause until app comes out.
+		
