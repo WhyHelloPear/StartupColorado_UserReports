@@ -1,3 +1,5 @@
+import os
+import shutil
 import csv
 import random
 import pandas as pd
@@ -20,6 +22,7 @@ class Directory:
 		self.categories['interests'] = []
 		self.categories['resources'] = []
 
+
 class User:
 	def __init__(self, uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources):
 		self.uid = uid #user id
@@ -30,16 +33,20 @@ class User:
 		self.created = created #date profile was created
 		self.count = count #number of times signed in
 		self.score = score
-		self.groups = groups #tracks groups person is associated with
-		self.expertise = expertise
-		self.industry = industry
-		self.interests = interests
-		self.resources = resources
+
+		self.categories = {}
+		self.categories['groups'] = groups
+		self.categories['expertise'] = expertise
+		self.categories['industry'] = industry
+		self.categories['interests'] = interests
+		self.categories['resources'] = resources
+
 
 def fill_directory(directory, category, data):
 	for item in data:
 		if item not in directory.categories[category]:
 			directory.categories[category].append(item)
+
 
 def fix_list(data):
 	result = []
@@ -54,9 +61,12 @@ def fix_list(data):
 
 	return result
 
+
 def analysis(directory):
 	for user in directory.users:
 		print(user.last_name+","+user.first_name+": "+str(user.score))
+		break
+
 
 def read_users(path, directory):
 	users = []
@@ -99,6 +109,7 @@ def read_users(path, directory):
 
 	return users
 
+
 def get_filename(directory):
 
 	value = ""
@@ -132,21 +143,55 @@ def get_filename(directory):
 	return value
 
 
+def handle_report_folder():
+	try:
+		shutil.rmtree('./reports')
+	except OSError as e:  ## if failed, report it back to the user ##
+	    print ("Error: reports folder not defined")
+	
+	try:
+		os.mkdir('./reports')
+	except OSError as e:  ## if failed, report it back to the user ##
+	    print ("Error: reports folder already defined")
 
-#reports
-	#industry
-		#specific industry
-			#list of users sorted by score
-	#interests
-		#specific interests
+
+def create_sub_folder(category):
+	path = './reports/' + category +'/'
+	os.mkdir(path)
+	return path
 
 
-def write_file(directory, category):
-	file_name = './reports/' + category = '.csv'
-	with open(file_name, "w") as csv_file:
-		writer = csv.writer(csv_file, delimiter=',')
+def write_category_file(directory, path, category, item):
+
+	sub_category = item
+
+	item = item.replace(" / ", "_")
+	item = item.replace(": ", "_")
+	item = item.replace(" ", "_")
+	item = item.replace("/", "_")
+	file = path + item + '.csv'
+
+	with open(file, "w") as csv_file:
+		writer = csv.writer(csv_file, delimiter=' ', escapechar=' ', quoting=csv.QUOTE_NONE)
 		string = ""
+
+		for user in directory.users:
+			if sub_category in user.categories[category]:
+				string += user.last_name+', '+user.first_name+": "+str(user.score)+'\n\n'
+		
 		writer.writerow([string])
+
+
+def generate_reports(directory):
+
+	handle_report_folder()
+	
+	for category in directory.categories.keys():
+		path = create_sub_folder(category)
+
+		for item in directory.categories[category]:
+			write_category_file(directory, path, category, item)
+
 
 def main():
 
@@ -160,8 +205,8 @@ def main():
 
 	directory.users.sort(key=lambda user:user.score, reverse=True)
 	# directory.users = sorted(directory.users, key=lambda user: user.score, reverse=True)
-	
-	# analysis(directory)
+
+	generate_reports(directory)
 
 
 

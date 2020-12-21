@@ -1,0 +1,20 @@
+Personal Tasks:
+
+	Help Desk page:
+		1) How do we actually create an html page to start working with?
+			a) I see that the design tab is there and serves as a basic template, but I'm unaware how to create the source code to start working/implementing this
+
+	Co-working page:
+		1) Access to image hosting for the site.
+			a) Where are we hosting the images. Does it matter where the images are being hosted? Public? Private?
+			
+	Podcasts:
+		1) I haven't forgotten about this task, just have been focussing on the report generation
+		
+	Mobile Page Formatting:
+		1) Is this something I should continue to hold off on? Or should I work on a single page (coworking) to show why this would be an important issue to work on?
+
+
+
+
+Discussion Notes:
