@@ -1,6 +1,6 @@
 # Personally Set Files to Ignore
-./user_reports/data/*
-./user_reports/reports/*
+user_reports/data/*
+user_reports/reports/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
