@@ -315,7 +315,9 @@ def generate_reports(directory):
 			write_category_file(directory, path, category, item)
 
 
-def generate_xls(directory, group_dicts):
+def generate_group_reports(directory, group_dicts):
+
+	os.mkdir('./reports/group_reports/')
 
 	categories = ['locations','industries','expertises','resources','stages']
 
@@ -323,7 +325,7 @@ def generate_xls(directory, group_dicts):
 		gid = group.gid
 		name = group.name.replace(' ', '_')
 
-		workbook = xlsxwriter.Workbook('reports/'+str(gid)+'_'+name+'.xlsx')
+		workbook = xlsxwriter.Workbook('reports/group_reports/'+str(gid)+'_'+name+'.xlsx')
 		worksheet = workbook.add_worksheet()
 
 
@@ -356,14 +358,13 @@ def main():
 
 	directory = Directory()
 	directory.users = read_users(path, directory)
-
 	directory.users.sort(key=lambda user:user.score, reverse=True)
 
 	# generate_reports(directofry)
 
 	group_dicts = create_group_dicts(directory)
-
-	generate_xls(directory, group_dicts)
+	handle_report_folder()
+	generate_group_reports(directory, group_dicts)
 
 
 main()
