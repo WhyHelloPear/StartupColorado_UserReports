@@ -344,12 +344,11 @@ def generate_xls(directory, group_dicts):
 
 		merge_format = workbook.add_format({'align': 'center','valign': 'vcenter'})
 		worksheet.merge_range('A1:N1', str(gid)+": "+group.name, merge_format)
-		
+
 		workbook.close()
 
 
 def main():
-
 
 	dir_name = "./data/"
 	file_name = get_filename(dir_name)
@@ -365,7 +364,6 @@ def main():
 	group_dicts = create_group_dicts(directory)
 
 	generate_xls(directory, group_dicts)
-
 
 
 main()
