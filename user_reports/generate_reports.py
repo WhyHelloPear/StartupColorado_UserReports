@@ -21,7 +21,7 @@ class Directory:
 							2720:"Grand Valley Entrepreneurs",
 							2721:"Food and Agriculture Industries",
 							2910:"Central Mountain Entrepreneurs",
-							2986:"ExSW: Entrepreneurs of the Southwest",
+							2986:"ExSW Entrepreneurs of the Southwest",
 							2987:"SoCo Entrpreneurs",
 							3094:"Group Moderators",
 							3132:"Northeast Small Biz and Entrepreneurs",
@@ -165,12 +165,6 @@ def fix_list(data):
 			result.append(item)
 
 	return result
-
-
-def analysis(directory):
-	for user in directory.users:
-		print(user.last_name+","+user.first_name+": "+str(user.score))
-		break
 
 
 def read_users(path, directory):
@@ -321,33 +315,37 @@ def generate_reports(directory):
 			write_category_file(directory, path, category, item)
 
 
-def generate_xl(directory, group_dicts):
-	workbook = xlsxwriter.Workbook('test.xlsx')
-	worksheet = workbook.add_worksheet()
+def generate_xls(directory, group_dicts):
 
-	# Some data we want to write to the worksheet.
-	expenses = (
-	    ['Rent', 1000],
-	    ['Gas',   100],
-	    ['Food',  300],
-	    ['Gym',    50],
-	)
+	categories = ['locations','industries','expertises','resources','stages']
 
-	# Start from the first cell. Rows and columns are zero indexed.
-	row = 0
-	col = 0
+	for group in directory.groups:
+		gid = group.gid
+		name = group.name.replace(' ', '_')
 
-	# Iterate over the data and write it out row by row.
-	for item, cost in (expenses):
-	    worksheet.write(row, col,     item)
-	    worksheet.write(row, col + 1, cost)
-	    row += 1
+		workbook = xlsxwriter.Workbook('reports/'+str(gid)+'_'+name+'.xlsx')
+		worksheet = workbook.add_worksheet()
 
-	# Write a total using a formula.
-	worksheet.write(row, 0, 'Total')
-	worksheet.write(row, 1, '=SUM(B1:B4)')
 
-	workbook.close()
+		col = 0
+		for category in categories:
+
+			row = 2
+			worksheet.write(row-1, col, category)
+			worksheet.write(row-1, col+1, 'Count')
+
+			for key in group_dicts[gid][category].keys():
+
+				worksheet.write(row, col, key)
+				worksheet.write(row, col+1, group_dicts[gid][category][key])
+				row += 1
+
+			col += 3
+
+		merge_format = workbook.add_format({'align': 'center','valign': 'vcenter'})
+		worksheet.merge_range('A1:N1', str(gid)+": "+group.name, merge_format)
+		
+		workbook.close()
 
 
 def main():
@@ -361,14 +359,12 @@ def main():
 	directory.users = read_users(path, directory)
 
 	directory.users.sort(key=lambda user:user.score, reverse=True)
-	# directory.users = sorted(directory.users, key=lambda user: user.score, reverse=True)
 
-	analysis(directory)
-	generate_reports(directory)
-
+	# generate_reports(directofry)
 
 	group_dicts = create_group_dicts(directory)
-	generate_xl(directory, group_dicts)
+
+	generate_xls(directory, group_dicts)
 
 
 
