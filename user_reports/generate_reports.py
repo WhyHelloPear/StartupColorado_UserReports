@@ -361,44 +361,6 @@ def handle_report_folder():
 		print ("Error: reports folder already defined")
 
 
-def create_sub_folder(category):
-	path = './reports/' + category +'/'
-	os.mkdir(path)
-	return path
-
-
-def write_category_file(directory, path, category, item):
-
-	sub_category = item
-
-	item = item.replace(" / ", "_")
-	item = item.replace(": ", "_")
-	item = item.replace(" ", "_")
-	item = item.replace("/", "_")
-	file = path + item + '.csv'
-
-	with open(file, "w") as csv_file:
-		writer = csv.writer(csv_file, delimiter=' ', escapechar=' ', quoting=csv.QUOTE_NONE)
-		string = ""
-
-		for user in directory.users:
-			if sub_category in user.categories[category]:
-				string += user.last_name+', '+user.first_name+": "+str(user.score)+'\n\n'
-		
-		writer.writerow([string])
-
-
-def generate_reports(directory):
-
-	handle_report_folder()
-	
-	for category in directory.categories.keys():
-		path = create_sub_folder(category)
-
-		for item in directory.categories[category]:
-			write_category_file(directory, path, category, item)
-
-
 def generate_group_reports(directory, group_dicts):
 
 	os.mkdir('./reports/group_reports/')
@@ -473,8 +435,6 @@ def main():
 	directory = Directory()
 	directory.users = read_users(path, directory)
 	directory.users.sort(key=lambda user:user.score, reverse=True)
-
-	# generate_reports(directofry)
 
 	sum_dict = create_sum_dict(directory)
 	group_dicts = create_group_dicts(directory)
