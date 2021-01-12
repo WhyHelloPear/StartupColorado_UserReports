@@ -42,14 +42,14 @@ class Directory:
 
 class User:
 	def __init__(self, uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources, location, stages):
-		self.uid = uid #user id
+		self.uid = uid #[STRING]   user id
 		self.first_name = first_name #tracks name of play
 		self.last_name = last_name
 		self.email = email
 		self.last_active = last_active #date profile was last active
 		self.created = created #date profile was created
-		self.count = count #number of times signed in
-		self.score = score
+		self.count = count # [INT]   number of times signed in
+		self.score = score # [INT]
 		
 
 		self.categories = {}
@@ -235,49 +235,113 @@ def fix_list(data):
 	return result
 
 
+def get_index(categories, category):
+	index = None
+	if category in categories:
+		index = categories.index(category)
+
+	return index
+
+
 def read_users(path, directory):
 	users = []
+
 	df = pd.read_excel(path)
 	df = df.fillna("")
+
 	categories = list(df.columns)
-	# print(categories.index("_e63e1ef3_Resources"))
+
 	data = df.to_numpy()
+
 	for row in data:
 
-		uid = row[0]
-		first_name = row[7]
-		last_name = row[4]
-		email = row[10]
-		last_active = row[41].split(' ')[0]
-		created = row[44].split(' ')[0]
-		count = row[40]
+		uid = ""
+		index = get_index(categories, "ID")
+		if index != None:
+			uid = row[index]
+
+		first_name = ""
+		index = get_index(categories, "First name")
+		if index != None:
+			first_name = row[index]
+
+		last_name = ""
+		index = get_index(categories, "Last name")
+		if index != None:
+			last_name = row[index]
+
+		email = ""
+		index = get_index(categories, "Email")
+		if index != None:
+			email = row[index]
+
+		last_active = ""
+		index = get_index(categories, "Last sign in date")
+		if index != None:
+			last_active = row[index].split(' ')[0]
+
+		created = ""
+		index = get_index(categories, "Created at")
+		if index != None:
+			created = row[index].split(' ')[0]
+
+		#number of times user has signed in (shows if user has activated their account or not)
+		count = 0
+		index = get_index(categories, "Count of sign in")
+		if index != None:
+			count = int(row[index])
 
 		score = 0
-		if row[119] != '':
-			score = int(row[119])
+		index = get_index(categories, "Engagement Scoring:Current score")
+		if index != None:
+			if row[index] != '':
+				score = int(row[index])
 
-		groups = fix_list(row[117].split(","))
-		groups = fill_directory(directory, 'groups', groups)
+		groups = []
+		index = get_index(categories, "Groups Member:Group Member")
+		if index != None:
+			groups = fix_list(row[index].split(","))
+			groups = fill_directory(directory, 'groups', groups)
 
-		expertise = fix_list(row[124].split(","))
-		expertise = fill_directory(directory, 'expertise', expertise)
+		expertise = []
+		index = get_index(categories, "_281d4ac7_Expertise")
+		if index != None:
+			expertise = fix_list(row[index].split(","))
+			expertise = fill_directory(directory, 'expertise', expertise)
 
-		industry = fix_list(row[128].split(","))
-		industry = fill_directory(directory, 'industry', industry)
+		industry = []
+		index = get_index(categories, "_07417723_Industry_1")
+		if index != None:
+			industry = fix_list(row[index].split(","))
+			industry = fill_directory(directory, 'industry', industry)
 
-		interests = fix_list(row[130].split(","))
-		interests = fill_directory(directory, 'interests', interests)
+		interests = []
+		index = get_index(categories, "_ec0c314f_Resources_I_Am_Interested_In")
+		if index != None:
+			interests = fix_list(row[index].split(","))
+			interests = fill_directory(directory, 'interests', interests)
 
-		resources = fix_list(row[123].split(","))
-		resources = fill_directory(directory, 'resources', resources)
+		resources = []
+		index = get_index(categories, "_e63e1ef3_Resources")
+		if index != None:
+			resources = fix_list(row[index].split(","))
+			resources = fill_directory(directory, 'resources', resources)
+
 
 		location = "NO RECORDED LOCATION"
+
+		full_address = ""
+		index = get_index(categories, "Live Location:Address")
+		if index != None:
+			full_address = row[index] #full address
+
+		city = ""
+		index = get_index(categories, "Live Location:City")
+		if index != None:
+			city = row[index] #city
 		
-		full_address = row[77] #full address
-		state = row[79] #city
-		
-		if len(state) != 0:
-			location = state
+		if len(city) != 0:
+			location = city
 		else:
 			if len(full_address) != 0:
 				split = full_address.split(",")
@@ -286,10 +350,11 @@ def read_users(path, directory):
 				else:
 					location = split[0]
 
-		
-		
-		stages = fix_list(row[87].split(","))
-		fill_directory(directory, 'groups', groups)
+		stages = []
+		index = get_index(categories, "_0318eefd_Business_Stage")
+		if index != None:
+			stages = fix_list(row[index].split(","))
+			fill_directory(directory, 'groups', groups)
 
 		user = User(uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources, location, stages)
 		users.append(user)

@@ -1,3 +1,4 @@
 # Personally Set Files to Ignore
 data/*
 reports/*
+venv/*
