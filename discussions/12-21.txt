@@ -56,6 +56,11 @@ Discussion Notes:
 		3) have button hyperlinked to type form
 
 	User Reports:
+	
+	
+	*****
+	Can you produce a very simple report that details user stats for Location, Industry, Expertise, Resources I’m Interested In, and Business Stage
+	*****
 
 	create a report for each group (w/ exclusions from specified groups [help desk, policy, moderators])
 		interests, industry, location

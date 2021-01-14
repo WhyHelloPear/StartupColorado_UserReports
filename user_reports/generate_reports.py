@@ -546,16 +546,25 @@ def get_max_string_len(data):
 	return value
 
 def generate_pdf(directory, group_dicts):
-	pdfkit.from_file('test.html', 'out.pdf') 
+	options = {
+	    'page-size': 'A4',
+	    'margin-top': '0in',
+	    'margin-right': '0in',
+	    'margin-bottom': '0in',
+	    'margin-left': '0in',
+	    'encoding': "UTF-8",
+	}
+	pdfkit.from_file('test.html', 'out.pdf', options) 
 
 def main():
 
-	dir_name = "./data/"
-	file_name = get_filename(dir_name)
-	path = dir_name + file_name
+	group_dir_name = "./data/group/"
+	export_dir_name = "./data/user_exports/"
+	file_name = get_filename(export_dir_name)
+	export_path = export_dir_name + file_name
 
 	directory = Directory()
-	directory.users = read_users(path, directory)
+	directory.users = read_users(export_path, directory)
 	directory.users.sort(key=lambda user:user.score, reverse=True)
 
 	sum_dict = create_sum_dict(directory)

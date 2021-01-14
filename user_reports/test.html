@@ -1,451 +1,512 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<style>
 
-			.label{
-				text-align:left;
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
+		<style type="text/css">
+
+			.jumbotron{
+				text-align: center;
+				padding-top: 15px;
+				padding-bottom: 15px;
+			}
+
+			.card-header{
+				font-weight: bold;
+				text-align: center;
+				padding-left: 5px;
+				padding-right: 5px;
+			}
+			
+			.card-body{
+				padding-top: 5px;
+				padding-bottom: 5px;
+				padding-left: 5px;
+				padding-right: 5px;
 			}
 
 			.count{
-				text-align:center;
-			}
-
-			table, th, td {
-				border: 1px solid black;
-				border-collapse: collapse;
-			}
-
-			div{
-				display:inline-block;
-				padding-left:40px;
-				padding-right:40px;
+				padding-left: 20px;
+				text-align: center;
 			}
 
 		</style>
+
 	</head>
 
 	<body>
 
-		<h1 style="text-align:center;">2986:ExSW Enterpreneurs of the Southwest</h1>
-		<br>
-		<br>
+		<div class="jumbotron">
+			<h2 class="title">2986:ExSW Enterpreneurs of the Southwest</h2>
+		</div>
 
-		<div>
+		<div class="container-fluid">
 
-			<table id="stages">
-				<tr>
-					<th colspan="2">Business Stages</th>
-				</tr>
-				<tr>
-					<th class="label">Stage</th>
-					<th class="count">Count</th>
-				</tr>
-				<tr>
-					<td>Startup</td>
-					<td class="count">10</td>
-				</tr>
-				<tr>
-					<td>Growth</td>
-					<td class="count">4</td>
-				</tr>
-				<tr>
-					<td>Explorator</td>
-					<td class="count">3</td>
-				</tr>
-				<tr>
-					<td>Idea</td>
-					<td class="count">3</td>
-				</tr>
-			</table>
+			<div style="display: inline-block;">
 
-			<table id="member_type">
-				<tr>
-					<th colspan="2">Member Types</th>
-				</tr>
-				<tr>
-					<th class="label">Type</th>
-					<th class="count">Count</th>
-				</tr>
-				<tr>
-					<td>Business Support Organization</td>
-					<td class="count">18</td>
-				</tr>
-				<tr>
-					<td>Entrepreneur</td>
-					<td class="count">18</td>
-				</tr>
-				<tr>
-					<td>Funder</td>
-					<td class="count">6</td>
-				</tr>
-				<tr>
-					<td>Creative</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Mentor</td>
-					<td class="count">1</td>
-				</tr>
-			</table>
+				<div style="float: left"class="card">
 
-			<table id="locations">
-				<tr>
-					<th colspan="2">Locations</th>
-				</tr>
-				<tr>
-					<th class="label">Location</th>
-					<th class="count">Count</th>
-				</tr>
-				<tr>
-					<td>Durango</td>
-					<td class="count">15</td>
-				</tr>
-				<tr>
-					<td>Telluride</td>
-					<td class="count">6</td>
-				</tr>
-				<tr>
-					<td>Pagosa Springs</td>
-					<td class="count">3</td>
-				</tr>
-				<tr>
-					<td>Cortez</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Ridgway</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Gunnison</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Delta</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Chromo</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Ouray</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Bayfield</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Silverthorne</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Mountain Village</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Norwood</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Hesperus</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Dolores</td>
-					<td class="count">1</td>
-				</tr>
-				
-				
-				<tr>
-					<td>Dove Creek</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Mancos</td>
-					<td class="count">1</td>
-				</tr>
-			</table>
+					<div class="card-header">Business Stages</div>
+					
+					<div class="card-body">
+						
+						<table id="stages">
+							<tr>
+								<th>Stage</th>
+								<th class="count">Count</th>
+							</tr>
+							<tr>
+								<td>Startup</td>
+								<td class="count">10</td>
+							</tr>
+							<tr>
+								<td>Growth</td>
+								<td class="count">4</td>
+							</tr>
+							<tr>
+								<td>Explorator</td>
+								<td class="count">3</td>
+							</tr>
+							<tr>
+								<td>Idea</td>
+								<td class="count">3</td>
+							</tr>
+						</table>
 
-			<table id="expertises">
-				<tr>
-					<th colspan="2">Expertises</th>
-				</tr>
-				<tr>
-					<th class="label">Expertise</th>
-					<th class="count">Count</th>
-				</tr>
-				<tr>
-					<td>Community Outreach</td>
-					<td class="count">10</td>
-				</tr>
-				<tr>
-					<td>Coaching/Mentorship</td>
-					<td class="count">9</td>
-				</tr>
-				<tr>
-					<td>Marketing & Promotions</td>
-					<td class="count">8</td>
-				</tr>
-				<tr>
-					<td>Fundraising</td>
-					<td class="count">8</td>
-				</tr>
-				<tr>
-					<td>Business Plan Development</td>
-					<td class="count">6</td>
-				</tr>
-				<tr>
-					<td>Industry Connections / Networking</td>
-					<td class="count">6</td>
-				</tr>
-				<tr>
-					<td>Leadership & Management</td>
-					<td class="count">6</td>
-				</tr>
-				<tr>
-					<td>Scaling: Growth & Expansion</td>
-					<td class="count">4</td>
-				</tr>
-				<tr>
-					<td>Strategic Planning</td>
-					<td class="count">4</td>
-				</tr>
-				<tr>
-					<td>Work / Life Balance</td>
-					<td class="count">4</td>
-				</tr>
-				<tr>
-					<td>Financial Models</td>
-					<td class="count">3</td>
-				</tr>
-				<tr>
-					<td>Pitch Coach</td>
-					<td class="count">3</td>
-				</tr>
-				<tr>
-					<td>Customer Acquisition</td>
-					<td class="count">3</td>
-				</tr>
-				<tr>
-					<td>Product Development</td>
-					<td class="count">3</td>
-				</tr>
-				<tr>
-					<td>Financial Management</td>
-					<td class="count">3</td>
-				</tr>
-				
-				
-				<tr>
-					<td>Business Model Canvas</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Grant Writing</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Product/Market Fit</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Proof of Concept Planning</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Commercial Real Estate</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Manufacturing</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Succession Planning</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Recruitment/Skilled Workforce</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Copywriting / Content Development</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Legal</td>
-					<td class="count">1</td>
-				</tr>
-			</table>
+					</div>
 
-			<table id="industries">
-				<tr>
-					<th colspan="2">Industries</th>
-				</tr>
-				<tr>
-					<th class="label">Industry</th>
-					<th class="count">Count</th>
-				</tr>
-				<tr>
-					<td>Ecosystem Builder</td>
-					<td class="count">5</td>
-				</tr>
-				<tr>
-					<td>Small Business Support</td>
-					<td class="count">4</td>
-				</tr>
-				<tr>
-					<td>Accelerator</td>
-					<td class="count">3</td>
-				</tr>
-				<tr>
-					<td>Government & Policy</td>
-					<td class="count">3</td>
-				</tr>
-				<tr>
-					<td>Incubator</td>
-					<td class="count">3</td>
-				</tr>
-				<tr>
-					<td>Food & Beverage</td>
-					<td class="count">3</td>
-				</tr>
-				<tr>
-					<td>Nonprofit & Philanthropic</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Coworking space</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Media</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Agriculture</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Hospitality & Tourism</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Consumer Goods</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Environmental & Natural Resources</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Education</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Arts & Entertainmnet</td>
-					<td class="count">2</td>
-				</tr>
-				
-				
-				<tr>
-					<td>Construction & Engineering</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Marketing & Advertising</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Funding</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Software Technology</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Manufacturing</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Outdoor Recreation</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Finance</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Music</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Real Estate</td>
-					<td class="count">1</td>
-				</tr>
-			</table>
+				</div>
 
-			<table id="resources">
-				<tr>
-					<th colspan="2">Resources</th>
-				</tr>
-				<tr>
-					<th class="label">Resource</th>
-					<th class="count">Count</th>
-				</tr>
-				<tr>
-					<td>Funding Models</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Market Research</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Startup Support/Coach</td>
-					<td class="count">2</td>
-				</tr>
-				<tr>
-					<td>Fundraising</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>General Education Support</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Organizational Structure</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Recruitment/Talent Acquisition</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Business Model</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Business Plan</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Pitch Coach</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Scaling</td>
-					<td class="count">1</td>
-				</tr>
-				<tr>
-					<td>Tech Support</td>
-					<td class="count">1</td>
-				</tr>
-			</table>
+				<div style="float: left"class="card">
+
+					<div class="card-header">Member Types</div>
+					
+					<div class="card-body">
+						
+						<table id="member_type">
+							<tr>
+								<th>Type</th>
+								<th class="count">Count</th>
+							</tr>
+							<tr>
+								<td>Business Support Organization</td>
+								<td class="count">18</td>
+							</tr>
+							<tr>
+								<td>Entrepreneur</td>
+								<td class="count">18</td>
+							</tr>
+							<tr>
+								<td>Funder</td>
+								<td class="count">6</td>
+							</tr>
+							<tr>
+								<td>Creative</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Mentor</td>
+								<td class="count">1</td>
+							</tr>
+						</table>
+
+					</div>
+
+				</div>
+
+				<div style="float: left"class="card">
+
+					<div class="card-header">Interested Resources</div>
+					
+					<div class="card-body">
+						
+						<table id="resources">
+							<tr>
+								<th>Resource</th>
+								<th class="count">Count</th>
+							</tr>
+							<tr>
+								<td>Funding Models</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Market Research</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Startup Support/Coach</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Fundraising</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>General Education Support</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Organizational Structure</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Recruitment/Talent Acquisition</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Business Model</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Business Plan</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Pitch Coach</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Scaling</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Tech Support</td>
+								<td class="count">1</td>
+							</tr>
+						</table>
+
+					</div>
+
+				</div>
+
+			</div>
+
+			<div style="display: inline-block;">
+
+				<div style="float: left"class="card">
+
+					<div class="card-header">Listed Locations</div>
+					
+					<div class="card-body">
+						
+						<table id="locations">
+							<tr>
+								<th>Location</th>
+								<th class="count">Count</th>
+							</tr>
+							<tr>
+								<td>Durango</td>
+								<td class="count">15</td>
+							</tr>
+							<tr>
+								<td>Telluride</td>
+								<td class="count">6</td>
+							</tr>
+							<tr>
+								<td>Pagosa Springs</td>
+								<td class="count">3</td>
+							</tr>
+							<tr>
+								<td>Cortez</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Ridgway</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Gunnison</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Delta</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Chromo</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Ouray</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Bayfield</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Silverthorne</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Mountain Village</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Norwood</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Hesperus</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Dolores</td>
+								<td class="count">1</td>
+							</tr>
+							
+							
+							<tr>
+								<td>Dove Creek</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Mancos</td>
+								<td class="count">1</td>
+							</tr>
+						</table>
+
+					</div>
+
+				</div>
+
+				<div style="float: left"class="card">
+
+					<div class="card-header">Listed Expertises</div>
+					
+					<div class="card-body">
+						
+						<table id="expertises">
+							<tr>
+								<th>Expertise</th>
+								<th class="count">Count</th>
+							</tr>
+							<tr>
+								<td>Community Outreach</td>
+								<td class="count">10</td>
+							</tr>
+							<tr>
+								<td>Coaching/Mentorship</td>
+								<td class="count">9</td>
+							</tr>
+							<tr>
+								<td>Marketing & Promotions</td>
+								<td class="count">8</td>
+							</tr>
+							<tr>
+								<td>Fundraising</td>
+								<td class="count">8</td>
+							</tr>
+							<tr>
+								<td>Business Plan Development</td>
+								<td class="count">6</td>
+							</tr>
+							<tr>
+								<td>Industry Connections / Networking</td>
+								<td class="count">6</td>
+							</tr>
+							<tr>
+								<td>Leadership & Management</td>
+								<td class="count">6</td>
+							</tr>
+							<tr>
+								<td>Scaling: Growth & Expansion</td>
+								<td class="count">4</td>
+							</tr>
+							<tr>
+								<td>Strategic Planning</td>
+								<td class="count">4</td>
+							</tr>
+							<tr>
+								<td>Work / Life Balance</td>
+								<td class="count">4</td>
+							</tr>
+							<tr>
+								<td>Financial Models</td>
+								<td class="count">3</td>
+							</tr>
+							<tr>
+								<td>Pitch Coach</td>
+								<td class="count">3</td>
+							</tr>
+							<tr>
+								<td>Customer Acquisition</td>
+								<td class="count">3</td>
+							</tr>
+							<tr>
+								<td>Product Development</td>
+								<td class="count">3</td>
+							</tr>
+							<tr>
+								<td>Financial Management</td>
+								<td class="count">3</td>
+							</tr>
+							
+							
+							<tr>
+								<td>Business Model Canvas</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Grant Writing</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Product/Market Fit</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Proof of Concept Planning</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Commercial Real Estate</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Manufacturing</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Succession Planning</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Recruitment/Skilled Workforce</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Copywriting / Content Development</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Legal</td>
+								<td class="count">1</td>
+							</tr>
+						</table>
+
+					</div>
+
+				</div>
+
+				<div style="float: left"class="card">
+
+					<div class="card-header">Listed Industries</div>
+					
+					<div class="card-body">
+						
+						<table id="industries">
+							<tr>
+								<th>Industry</th>
+								<th class="count">Count</th>
+							</tr>
+							<tr>
+								<td>Ecosystem Builder</td>
+								<td class="count">5</td>
+							</tr>
+							<tr>
+								<td>Small Business Support</td>
+								<td class="count">4</td>
+							</tr>
+							<tr>
+								<td>Accelerator</td>
+								<td class="count">3</td>
+							</tr>
+							<tr>
+								<td>Government & Policy</td>
+								<td class="count">3</td>
+							</tr>
+							<tr>
+								<td>Incubator</td>
+								<td class="count">3</td>
+							</tr>
+							<tr>
+								<td>Food & Beverage</td>
+								<td class="count">3</td>
+							</tr>
+							<tr>
+								<td>Nonprofit & Philanthropic</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Coworking space</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Media</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Agriculture</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Hospitality & Tourism</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Consumer Goods</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Environmental & Natural Resources</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Education</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Arts & Entertainmnet</td>
+								<td class="count">2</td>
+							</tr>
+							
+							
+							<tr>
+								<td>Construction & Engineering</td>
+								<td class="count">2</td>
+							</tr>
+							<tr>
+								<td>Marketing & Advertising</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Funding</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Software Technology</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Manufacturing</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Outdoor Recreation</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Finance</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Music</td>
+								<td class="count">1</td>
+							</tr>
+							<tr>
+								<td>Real Estate</td>
+								<td class="count">1</td>
+							</tr>
+						</table>
+
+					</div>
+
+				</div>
+
+			</div>
 
 		</div>
 
