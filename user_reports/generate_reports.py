@@ -6,7 +6,11 @@ import xlsxwriter
 import pandas as pd
 import numpy as np
 from os import listdir
+
 from os.path import isfile, join
+
+from fpdf import FPDF
+import pdfkit
 
 # I think it’d be helpful to create views sorted by engagement score, resources, and date created (descending).
 # Eventually we’ll want to create user lists for group moderators to send targeted email campaigns to.
@@ -38,10 +42,11 @@ class Directory:
 		self.categories['industry'] = []
 		self.categories['interests'] = []
 		self.categories['resources'] = []
+		self.categories['member_types'] = []
 
 
 class User:
-	def __init__(self, uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources, location, stages):
+	def __init__(self, uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources, location, stages, active, member_types):
 		self.uid = uid #[STRING]   user id
 		self.first_name = first_name #tracks name of play
 		self.last_name = last_name
@@ -59,8 +64,11 @@ class User:
 		self.categories['interests'] = interests
 		self.categories['resources'] = resources
 		self.categories['stages'] = stages
+		self.categories['member_types'] = member_types
 		
 		self.location = location
+
+		self.active = active
 		
 
 class Group:
@@ -107,9 +115,82 @@ def create_group_dicts(directory):
 		expertises = {}
 		resources = {}
 		stages = {}
+		member_types = {}
 
 		for user in group.members:
+
+			if user.active:
 			
+				location = user.location.split(",")[0]
+				if location not in locations:
+					locations[location] = 1
+				else:
+					locations[location] += 1
+					
+				for industry in user.categories['industry']:
+					if industry not in industries:
+						industries[industry] = 1
+					else:
+						industries[industry] += 1
+				
+				for expertise in user.categories['expertise']:
+					if expertise not in expertises:
+						expertises[expertise] = 1
+					else:
+						expertises[expertise] += 1
+				
+				for resource in user.categories['resources']:
+					if resource not in resources:
+						resources[resource] = 1
+					else:
+						resources[resource] += 1
+				
+				for stage in user.categories['stages']:
+					if stage not in stages:
+						stages[stage] = 1
+					else:
+						stages[stage] += 1 
+
+				for member_type in user.categories['member_types']:
+					if member_type not in member_types:
+						member_types[member_type] = 1
+					else:
+						member_types[member_type] += 1 
+					
+		group_dict[group.gid]["locations"] = dict(sorted(locations.items(), key=lambda item:item[1], reverse=True))
+		group_dict[group.gid]["industries"] = dict(sorted(industries.items(), key=lambda item:item[1], reverse=True))
+		group_dict[group.gid]["expertises"] = dict(sorted(expertises.items(), key=lambda item:item[1], reverse=True))
+		group_dict[group.gid]["resources"] = dict(sorted(resources.items(), key=lambda item:item[1], reverse=True))
+		group_dict[group.gid]["stages"] = dict(sorted(stages.items(), key=lambda item:item[1], reverse=True))
+		group_dict[group.gid]["member_types"] = dict(sorted(member_types.items(), key=lambda item:item[1], reverse=True))
+
+	return group_dict
+
+
+#Creates and returns a dictionary that holds all groups and the selected demographics of each group
+def create_sum_dict(directory):
+	
+	#create pie chart of composition of each group and the specified areas of interest (locations, industries, etc)
+	
+	
+	#NOTE: Stages (the stage a user is in within their career) is NOT an accurate report. 
+	#Not all users, only a select few in fact, have filled this information out.
+	#In act, a single user may make up for 4 or 5 different reported stages; keep this in mind
+	
+
+	sum_dict = {}
+
+	locations = {}
+	industries = {}
+	expertises = {}
+	resources = {}
+	stages = {}
+	member_types = {}
+
+	for user in directory.users:
+
+		if user.active:
+		
 			location = user.location.split(",")[0]
 			if location not in locations:
 				locations[location] = 1
@@ -139,72 +220,20 @@ def create_group_dicts(directory):
 					stages[stage] = 1
 				else:
 					stages[stage] += 1 
-					
-		group_dict[group.gid]["locations"] = dict(sorted(locations.items(), key=lambda item:item[1], reverse=True))
-		group_dict[group.gid]["industries"] = dict(sorted(industries.items(), key=lambda item:item[1], reverse=True))
-		group_dict[group.gid]["expertises"] = dict(sorted(expertises.items(), key=lambda item:item[1], reverse=True))
-		group_dict[group.gid]["resources"] = dict(sorted(resources.items(), key=lambda item:item[1], reverse=True))
-		group_dict[group.gid]["stages"] = dict(sorted(stages.items(), key=lambda item:item[1], reverse=True))
-	
-	return group_dict
 
-
-#Creates and returns a dictionary that holds all groups and the selected demographics of each group
-def create_sum_dict(directory):
-	
-	#create pie chart of composition of each group and the specified areas of interest (locations, industries, etc)
-	
-	
-	#NOTE: Stages (the stage a user is in within their career) is NOT an accurate report. 
-	#Not all users, only a select few in fact, have filled this information out.
-	#In act, a single user may make up for 4 or 5 different reported stages; keep this in mind
-	
-
-	sum_dict = {}
-
-	locations = {}
-	industries = {}
-	expertises = {}
-	resources = {}
-	stages = {}
-
-	for user in directory.users:
-		
-		location = user.location.split(",")[0]
-		if location not in locations:
-			locations[location] = 1
-		else:
-			locations[location] += 1
-			
-		for industry in user.categories['industry']:
-			if industry not in industries:
-				industries[industry] = 1
-			else:
-				industries[industry] += 1
-		
-		for expertise in user.categories['expertise']:
-			if expertise not in expertises:
-				expertises[expertise] = 1
-			else:
-				expertises[expertise] += 1
-		
-		for resource in user.categories['resources']:
-			if resource not in resources:
-				resources[resource] = 1
-			else:
-				resources[resource] += 1
-		
-		for stage in user.categories['stages']:
-			if stage not in stages:
-				stages[stage] = 1
-			else:
-				stages[stage] += 1 
+			for member_type in user.categories['member_types']:
+				if member_type not in member_types:
+					member_types[member_type] = 1
+				else:
+					member_types[member_type] += 1 
 				
 	sum_dict["locations"] = dict(sorted(locations.items(), key=lambda item:item[1], reverse=True))
 	sum_dict["industries"] = dict(sorted(industries.items(), key=lambda item:item[1], reverse=True))
 	sum_dict["expertises"] = dict(sorted(expertises.items(), key=lambda item:item[1], reverse=True))
 	sum_dict["resources"] = dict(sorted(resources.items(), key=lambda item:item[1], reverse=True))
 	sum_dict["stages"] = dict(sorted(stages.items(), key=lambda item:item[1], reverse=True))
+	sum_dict["member_types"] = dict(sorted(member_types.items(), key=lambda item:item[1], reverse=True))
+
 
 	return sum_dict
 		
@@ -291,6 +320,10 @@ def read_users(path, directory):
 		if index != None:
 			count = int(row[index])
 
+		active = False
+		if count > 0:
+			active = True
+
 		score = 0
 		index = get_index(categories, "Engagement Scoring:Current score")
 		if index != None:
@@ -356,7 +389,20 @@ def read_users(path, directory):
 			stages = fix_list(row[index].split(","))
 			fill_directory(directory, 'groups', groups)
 
-		user = User(uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources, location, stages)
+
+
+		member_types = []
+		index = get_index(categories, "SubNetworks:Title")
+		if index != None:
+			member_types = fix_list(row[index].split(","))
+			if "Undefined" in member_types:
+				member_types.remove("Undefined")
+			fill_directory(directory, 'member_types', member_types)
+
+
+
+
+		user = User(uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources, location, stages, active, member_types)
 		users.append(user)
 
 		for gid in groups:
@@ -430,7 +476,7 @@ def generate_group_reports(directory, group_dicts):
 
 	os.mkdir('./reports/group_reports/')
 
-	categories = ['locations','industries','expertises','resources','stages']
+	categories = ['locations','industries','expertises','resources','stages','member_types']
 
 	for group in directory.groups:
 		gid = group.gid
@@ -456,7 +502,7 @@ def generate_group_reports(directory, group_dicts):
 			col += 3
 
 		merge_format = workbook.add_format({'align': 'center','valign': 'vcenter'})
-		worksheet.merge_range('A1:N1', str(gid)+": "+group.name, merge_format)
+		worksheet.merge_range('A1:Q1', str(gid)+": "+group.name, merge_format)
 
 		workbook.close()
 
@@ -465,7 +511,7 @@ def generate_sum_report(directory, sum_dict):
 
 	# os.mkdir('./reports/group_reports/')
 
-	categories = ['locations','industries','expertises','resources','stages']
+	categories = ['locations','industries','expertises','resources','stages','member_types']
 
 	workbook = xlsxwriter.Workbook('reports/sum_report.xlsx')
 	worksheet = workbook.add_worksheet()
@@ -486,10 +532,21 @@ def generate_sum_report(directory, sum_dict):
 		col += 3
 
 	merge_format = workbook.add_format({'align': 'center','valign': 'vcenter'})
-	worksheet.merge_range('A1:N1', "User Breakdown", merge_format)
+	worksheet.merge_range('A1:Q1', "User Breakdown", merge_format)
 
 	workbook.close()
 
+
+
+def get_max_string_len(data):
+	value = 0
+	for item in data:
+		if len(item) > value:
+			value = len(item)
+	return value
+
+def generate_pdf(directory, group_dicts):
+	pdfkit.from_file('test.html', 'out.pdf') 
 
 def main():
 
@@ -509,5 +566,10 @@ def main():
 	generate_sum_report(directory, sum_dict)
 	generate_group_reports(directory, group_dicts)
 
+	generate_pdf(directory, group_dicts)
+
 
 main()
+
+
+#SDDC
