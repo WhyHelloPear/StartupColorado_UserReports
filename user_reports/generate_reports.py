@@ -21,21 +21,7 @@ class Directory:
 	def __init__(self):
 		self.users = []
 		self.groups = []
-		self.group_names = {2315:"Help Center",
-							2720:"Grand Valley Entrepreneurs",
-							2721:"Food and Agriculture Industries",
-							2910:"Central Mountain Entrepreneurs",
-							2986:"ExSW Entrepreneurs of the Southwest",
-							2987:"SoCo Entrpreneurs",
-							3094:"Group Moderators",
-							3132:"Northeast Small Biz and Entrepreneurs",
-							3196:"Northwest Colorado Entrepreneurs",
-							3492:"Roaring Fork Valley Startups",
-							3507:"San Luis Valley Entrepreneurs",
-							3550:"Outdoor Industry Startups",
-							3671:"Rural Entrepreneurial Policy Coalition",
-							4148:"Delta-Montrose Entrepreneurs"}
-
+		self.group_names = {}
 		self.categories = {}
 		self.categories['groups'] = []
 		self.categories['expertise'] = []
@@ -411,6 +397,21 @@ def read_users(path, directory):
 	return users
 
 
+def read_group_names(path):
+	names = {}
+	file_name = path + "names.csv"
+	with open(file_name) as file:
+		data = csv.reader(file, delimiter=",")
+		for row in data:
+			gid = int(row[0])
+			name = row[1]
+
+			names[gid] = name
+
+	return names
+
+
+
 def get_filename(directory):
 
 	value = ""
@@ -537,7 +538,6 @@ def generate_sum_report(directory, sum_dict):
 	workbook.close()
 
 
-
 def get_max_string_len(data):
 	value = 0
 	for item in data:
@@ -545,25 +545,30 @@ def get_max_string_len(data):
 			value = len(item)
 	return value
 
+
 def generate_pdf(directory, group_dicts):
 	options = {
-	    'page-size': 'A4',
-	    'margin-top': '0in',
-	    'margin-right': '0in',
-	    'margin-bottom': '0in',
-	    'margin-left': '0in',
-	    'encoding': "UTF-8",
+		'page-size': 'A4',
+		'margin-top': '0in',
+		'margin-right': '0in',
+		'margin-bottom': '0in',
+		'margin-left': '0in',
+		'encoding': "UTF-8",
 	}
 	pdfkit.from_file('test.html', 'out.pdf', options) 
 
+
 def main():
 
-	group_dir_name = "./data/group/"
 	export_dir_name = "./data/user_exports/"
-	file_name = get_filename(export_dir_name)
-	export_path = export_dir_name + file_name
+	export_name = get_filename(export_dir_name)
+	export_path = export_dir_name + export_name
 
 	directory = Directory()
+
+	group_dir_name = "./data/group_data/"
+	directory.group_names = read_group_names(group_dir_name)
+	
 	directory.users = read_users(export_path, directory)
 	directory.users.sort(key=lambda user:user.score, reverse=True)
 
