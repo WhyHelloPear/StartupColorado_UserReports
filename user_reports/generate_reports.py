@@ -1,13 +1,13 @@
 import os
+from os import listdir
+from os.path import isfile, join
+
 import shutil
 import csv
 import random
 import xlsxwriter
 import pandas as pd
 import numpy as np
-from os import listdir
-
-from os.path import isfile, join
 
 from fpdf import FPDF
 import pdfkit
@@ -411,7 +411,6 @@ def read_group_names(path):
 	return names
 
 
-
 def get_filename(directory):
 
 	value = ""
@@ -546,7 +545,7 @@ def get_max_string_len(data):
 	return value
 
 
-def generate_pdf(directory, group_dicts):
+def generate_pdf(name):
 	options = {
 		'page-size': 'A4',
 		'margin-top': '0in',
@@ -555,7 +554,86 @@ def generate_pdf(directory, group_dicts):
 		'margin-left': '0in',
 		'encoding': "UTF-8",
 	}
-	pdfkit.from_file('test.html', 'out.pdf', options) 
+
+	output = './reports/group_reports/'+ name + ".pdf"
+	pdfkit.from_file('./html_report.html', output) 
+
+
+def write_html(directory, group_dicts):
+
+	try:
+		os.mkdir('./reports/group_reports')
+	except OSError as e:  ## if failed, report it back to the user ##
+		print ("Error: reports folder already defined")
+
+	original_template = ""
+
+	with open('./data/html_template.csv', newline='') as csvfile:
+		file = csv.reader(csvfile)
+		for row in file:
+			for item in row:
+				original_template += item
+
+
+	for group in directory.groups:
+
+		template = original_template
+		gid = group.gid
+		name = group.name
+
+		path = "./data/group_data/cover_photos/"
+		files = [f for f in listdir(path) if isfile(join(path, f))]
+		background_name = "default.jfif"
+		for file in files:
+			if str(gid) in file:
+				background_name = file
+		background = path + background_name
+
+		path = "./data/group_data/logos/"
+		files = [f for f in listdir(path) if isfile(join(path, f))]
+		logo_name = "default.jpg"
+		for file in files:
+			if str(gid) in file:
+				logo_name = file
+		logo = path + logo_name
+		
+		categories = ['locations','industries','expertises','resources','stages','member_types']
+		group_dict = group_dicts[gid]
+		text_dict = {}
+
+		for category in categories:
+			sub_dict = group_dict[category]
+
+			text = ''
+			for item in sub_dict:
+				text += '<tr><td>'+item+'</td>'
+				text += '<td class="count">'+str(sub_dict[item])+'</td></tr>'
+
+			text_dict[category] = text
+
+		template = template.replace('[INSERT GROUP BACKGROUND]', background)
+		template = template.replace('[INSERT GROUP LOGO]', logo)
+		template = template.replace('[INSERT GROUP TITLE]', name)
+		template = template.replace('[INSERT STAGE ENTRIES]', text_dict['stages'])
+		template = template.replace('[INSERT MEMBER TYPE ENTRIES]', text_dict['member_types'])
+		template = template.replace('[INSERT RESOURCES ENTRIES]', text_dict['resources'])
+		template = template.replace('[INSERT LOCATION ENTRIES]', text_dict['locations'])
+		template = template.replace('[INSERT EXPERTISE ENTRIES]', text_dict['expertises'])
+		template = template.replace('[INSERT INDUSTRY ENTRIES]', text_dict['industries'])
+
+		html = open("./html_report.html","w")
+		html.write(template)
+		
+		name = name.replace(' ','_')
+		html_name = str(gid)+'_'+name
+		html.close()
+
+		file_name = name.replace(' ','_')
+		file_name = str(gid) + '_' + file_name
+		generate_pdf(file_name)
+
+		if os.path.exists("./html_report.html"):
+			os.remove("./html_report.html")
 
 
 def main():
@@ -577,10 +655,13 @@ def main():
 
 	handle_report_folder()
 
-	generate_sum_report(directory, sum_dict)
-	generate_group_reports(directory, group_dicts)
+	# generate_sum_report(directory, sum_dict)
+	# generate_group_reports(directory, group_dicts)
 
-	generate_pdf(directory, group_dicts)
+	# generate_pdf(directory, group_dicts)
+
+
+	write_html(directory, group_dicts)
 
 
 main()
