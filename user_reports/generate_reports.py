@@ -8,6 +8,7 @@ import random
 import xlsxwriter
 import pandas as pd
 import numpy as np
+import math
 
 from fpdf import FPDF
 import pdfkit
@@ -29,7 +30,7 @@ class Directory:
 		self.categories['interests'] = []
 		self.categories['resources'] = []
 		self.categories['member_types'] = []
-
+		self.current_date = ''
 
 class User:
 	def __init__(self, uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources, location, stages, active, member_types):
@@ -99,6 +100,7 @@ def create_group_dicts(directory):
 		locations = {}
 		industries = {}
 		expertises = {}
+		interests = {}
 		resources = {}
 		stages = {}
 		member_types = {}
@@ -124,6 +126,12 @@ def create_group_dicts(directory):
 						expertises[expertise] = 1
 					else:
 						expertises[expertise] += 1
+
+				for interest in user.categories['interests']:
+					if interest not in interests:
+						interests[interest] = 1
+					else:
+						interests[interest] += 1
 				
 				for resource in user.categories['resources']:
 					if resource not in resources:
@@ -146,6 +154,7 @@ def create_group_dicts(directory):
 		group_dict[group.gid]["locations"] = dict(sorted(locations.items(), key=lambda item:item[1], reverse=True))
 		group_dict[group.gid]["industries"] = dict(sorted(industries.items(), key=lambda item:item[1], reverse=True))
 		group_dict[group.gid]["expertises"] = dict(sorted(expertises.items(), key=lambda item:item[1], reverse=True))
+		group_dict[group.gid]["interests"] = dict(sorted(interests.items(), key=lambda item:item[1], reverse=True))
 		group_dict[group.gid]["resources"] = dict(sorted(resources.items(), key=lambda item:item[1], reverse=True))
 		group_dict[group.gid]["stages"] = dict(sorted(stages.items(), key=lambda item:item[1], reverse=True))
 		group_dict[group.gid]["member_types"] = dict(sorted(member_types.items(), key=lambda item:item[1], reverse=True))
@@ -169,6 +178,7 @@ def create_sum_dict(directory):
 	locations = {}
 	industries = {}
 	expertises = {}
+	interests = {}
 	resources = {}
 	stages = {}
 	member_types = {}
@@ -194,6 +204,12 @@ def create_sum_dict(directory):
 					expertises[expertise] = 1
 				else:
 					expertises[expertise] += 1
+
+			for interest in user.categories['interests']:
+				if interest not in interests:
+					interests[interest] = 1
+				else:
+					interests[interest] += 1
 			
 			for resource in user.categories['resources']:
 				if resource not in resources:
@@ -216,6 +232,7 @@ def create_sum_dict(directory):
 	sum_dict["locations"] = dict(sorted(locations.items(), key=lambda item:item[1], reverse=True))
 	sum_dict["industries"] = dict(sorted(industries.items(), key=lambda item:item[1], reverse=True))
 	sum_dict["expertises"] = dict(sorted(expertises.items(), key=lambda item:item[1], reverse=True))
+	sum_dict["interests"] = dict(sorted(interests.items(), key=lambda item:item[1], reverse=True))
 	sum_dict["resources"] = dict(sorted(resources.items(), key=lambda item:item[1], reverse=True))
 	sum_dict["stages"] = dict(sorted(stages.items(), key=lambda item:item[1], reverse=True))
 	sum_dict["member_types"] = dict(sorted(member_types.items(), key=lambda item:item[1], reverse=True))
@@ -452,12 +469,21 @@ def get_filename(directory):
 					if int(curr_split[2]) >= int(latest_split[2]):
 						value = option
 
-		value = "User_export_" + value + ".xlsx"
+
+		date = value
+		value = "User_export_" + date + ".xlsx"
 
 	else:
 		print("ERROR: No user export files found!")
 
-	return value
+
+	date = date.split('-')
+	month = date[1]
+	if month[0] == '0':
+		month = month[1:]
+	date = month + '/' + date[2] + '/' + date[0]
+
+	return value, date
 
 
 def handle_report_folder():
@@ -476,7 +502,7 @@ def generate_group_reports(directory, group_dicts):
 
 	os.mkdir('./reports/group_reports/')
 
-	categories = ['locations','industries','expertises','resources','stages','member_types']
+	categories = ['locations','industries','expertises','interests','stages','member_types']
 
 	for group in directory.groups:
 		gid = group.gid
@@ -511,7 +537,7 @@ def generate_sum_report(directory, sum_dict):
 
 	# os.mkdir('./reports/group_reports/')
 
-	categories = ['locations','industries','expertises','resources','stages','member_types']
+	categories = ['locations','industries','expertises','interests','stages','member_types']
 
 	workbook = xlsxwriter.Workbook('reports/sum_report.xlsx')
 	worksheet = workbook.add_worksheet()
@@ -559,6 +585,11 @@ def generate_pdf(name):
 	pdfkit.from_file('./html_report.html', output) 
 
 
+def get_differences():
+	
+
+
+
 def write_html(directory, group_dicts):
 
 	try:
@@ -597,7 +628,7 @@ def write_html(directory, group_dicts):
 				logo_name = file
 		logo = path + logo_name
 		
-		categories = ['locations','industries','expertises','resources','stages','member_types']
+		categories = ['locations','industries','expertises','interests','stages','member_types']
 		group_dict = group_dicts[gid]
 		text_dict = {}
 
@@ -605,9 +636,13 @@ def write_html(directory, group_dicts):
 			sub_dict = group_dict[category]
 
 			text = ''
-			for item in sub_dict:
-				text += '<tr><td>'+item+'</td>'
-				text += '<td class="count">'+str(sub_dict[item])+'</td></tr>'
+
+			if (category == 'stages') or (category == 'member_types'):
+				for item in sub_dict:
+					text += '<tr><td>'+item+'</td>'
+					text += '<td class="count">'+str(sub_dict[item])+'</td></tr>'
+			else:
+				items, counts = 
 
 			text_dict[category] = text
 
@@ -616,10 +651,13 @@ def write_html(directory, group_dicts):
 		template = template.replace('[INSERT GROUP TITLE]', name)
 		template = template.replace('[INSERT STAGE ENTRIES]', text_dict['stages'])
 		template = template.replace('[INSERT MEMBER TYPE ENTRIES]', text_dict['member_types'])
-		template = template.replace('[INSERT RESOURCES ENTRIES]', text_dict['resources'])
+		template = template.replace('[INSERT INTEREST ENTRIES]', text_dict['interests'])
 		template = template.replace('[INSERT LOCATION ENTRIES]', text_dict['locations'])
 		template = template.replace('[INSERT EXPERTISE ENTRIES]', text_dict['expertises'])
 		template = template.replace('[INSERT INDUSTRY ENTRIES]', text_dict['industries'])
+
+		template = template.replace('[INSERT NUM USERS]', str(len(group.members)))
+		template = template.replace('[INSERT DATE]', directory.current_date)
 
 		html = open("./html_report.html","w")
 		html.write(template)
@@ -639,10 +677,11 @@ def write_html(directory, group_dicts):
 def main():
 
 	export_dir_name = "./data/user_exports/"
-	export_name = get_filename(export_dir_name)
+	export_name, date = get_filename(export_dir_name)
 	export_path = export_dir_name + export_name
 
 	directory = Directory()
+	directory.current_date = date
 
 	group_dir_name = "./data/group_data/"
 	directory.group_names = read_group_names(group_dir_name)

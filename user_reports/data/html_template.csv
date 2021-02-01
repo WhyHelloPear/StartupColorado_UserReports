@@ -8,14 +8,13 @@
 		<style type="text/css">
 
 			.jumbotron{
-				/*text-align: center;*/
+				margin-bottom: 0px;
 				padding-bottom: 50px;
-
 				background-image: url("[INSERT GROUP BACKGROUND]");
   				background-size: cover;
   				text-align: center;
   				color: #fff;
-    			text-shadow: 0.5px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+    			text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 			}
 
 			.title{
@@ -51,9 +50,16 @@
 
 	<body>
 
-		<div class="jumbotron">
+		<div class="jumbotron jumbotron-fluid">
 			<h2 class="title">[INSERT GROUP TITLE]</h2>
 			<img class="group_logo" src="[INSERT GROUP LOGO]">
+		</div>
+
+		<div class="d-flex bg-secondary" style="margin-bottom: 25px;">
+			<div style="display: inline-block;">
+				<div class="mr-auto p-2 text-white">Number of Users: [INSERT NUM USERS]</div>
+				<div class="p-2 text-white">Report Date: [INSERT DATE]</div>
+			</div>
 		</div>
 
 
@@ -97,7 +103,7 @@
 					<div class="card-body">
 						
 						<table id="resources">
-							[INSERT RESOURCES ENTRIES]
+							[INSERT INTEREST ENTRIES]
 						</table>
 
 					</div>
