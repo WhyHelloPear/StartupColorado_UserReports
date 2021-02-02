@@ -429,62 +429,80 @@ def read_group_names(path):
 	return names
 
 
-def get_filename(directory):
+def most_recent_date(d1, d2):
+
+	d1 = d1.split("-")
+	d2 = d2.split("-")
+
+	new = d1
+	old = d2
+
+
+	#newer year
+	if int(d2[0]) > int(d1[0]):
+		new = d2
+		old = d1
+
+	#same year
+	elif int(d2[0]) == int(d1[0]):
+
+		#newer month
+		if int(d2[1]) > int(d1[1]):
+			new = d2
+			old = d1
+
+		#same month
+		elif int(d2[1]) == int(d1[1]):
+
+			#newer day
+			if int(d2[2]) >= int(d1[2]):
+				new = d2
+				old = d1
+
+	new = new[0]+'-'+new[1]+'-'+new[2]
+	old = old[0]+'-'+old[1]+'-'+old[2]
+
+	return new, old
+
+
+def get_dates(path):
 
 	value = ""
 
-	files = [f for f in listdir(directory) if isfile(join(directory, f))]
-	options = []
+	files = [f for f in listdir(path) if isfile(join(path, f))]
+	dates = []
 
 	for file in files:
 		if "User_export_" in file:
 			date = file.replace("~$","")
 			date = date.replace("User_export_","")
 			date = date.replace(".xlsx","")
-			if date not in options:
-				options.append(date)
+			if date not in dates:
+				dates.append(date)
 
-	if len(options) > 0:
+	done = False
 
-		value = options[0]
-		for option in options:
-			latest_split = value.split("-")
-			curr_split = option.split("-")
+	while not done:
+		previous = dates.copy()
 
+		for i in range(len(dates)):
+			if i == len(dates) - 1:
+				break
 
-			#newer year
-			if int(curr_split[0]) > int(latest_split[0]):
-				value = option
+			new, old = most_recent_date(dates[i], dates[i+1])
+			dates[i] = new
+			dates[i+1] = old
 
-			#same year
-			elif int(curr_split[0]) == int(latest_split[0]):
+		if dates == previous:
+			done = True
 
-				#newer month
-				if int(curr_split[1]) > int(latest_split[1]):
-					value = option
-
-				#same month
-				elif int(curr_split[1]) == int(latest_split[1]):
-
-					#newer day
-					if int(curr_split[2]) >= int(latest_split[2]):
-						value = option
+	return dates
 
 
-		date = value
-		value = "User_export_" + date + ".xlsx"
-
-	else:
-		print("ERROR: No user export files found!")
-
-
+def format_date(date):
 	date = date.split('-')
-	month = date[1]
-	if month[0] == '0':
-		month = month[1:]
-	date = month + '/' + date[2] + '/' + date[0]
-
-	return value, date
+	date = date[1]+'/'+date[2]+'/'+date[0]
+	return date
 
 
 def handle_report_folder():
@@ -670,12 +688,31 @@ def write_html(directory, group_dicts):
 
 def main():
 
+	handle_report_folder()
+
 	export_dir_name = "./data/user_exports/"
-	export_name, date = get_filename(export_dir_name)
+	dates = get_dates(export_dir_name)
+
+	curr_date = None
+	prev_date = None
+	if len(dates) == 0:
+		print("ERROR: No use exports found in data directory!")
+		return(0)
+	else:
+		curr_date = dates[0]
+		if len(dates) > 1:
+			prev_date = dates[1]
+
+
+
+	curr_date = format_date(curr_date)
+
+	export_name = "User_export_" + dates[0] + ".xlsx"
 	export_path = export_dir_name + export_name
 
+
 	curr_directory = Directory()
-	curr_directory.current_date = date
+	curr_directory.current_date = curr_date
 
 	group_dir_name = "./data/group_data/"
 	curr_directory.group_names = read_group_names(group_dir_name)
@@ -683,21 +720,33 @@ def main():
 	curr_directory.users = read_users(export_path, curr_directory)
 	curr_directory.users.sort(key=lambda user:user.score, reverse=True)
 
-	sum_dict = create_sum_dict(curr_directory)
-	group_dicts = create_group_dicts(curr_directory)
+	curr_sum_dict = create_sum_dict(curr_directory)
+	curr_group_dicts = create_group_dicts(curr_directory)
 
-	handle_report_folder()
+	if prev_date != None:
+		prev_date = format_date(prev_date)
+		export_name = "User_export_" + dates[1] + ".xlsx"
+		export_path = export_dir_name + export_name
+		prev_directory = Directory()
+		prev_directory.current_date = prev_date
+
+		prev_directory.group_names = read_group_names(group_dir_name)
+
+		prev_directory.users = read_users(export_path, prev_directory)
+		prev_directory.users.sort(key=lambda user:user.score, reverse=True)
+
+		prev_sum_dict = create_sum_dict(curr_directory)
+		prev_group_dicts = create_group_dicts(curr_directory)
+
+		# write_html(prev_directory, prev_group_dicts)
+
 
 	# generate_sum_report(directory, sum_dict)
 	# generate_group_reports(directory, group_dicts)
 
 	# generate_pdf(directory, group_dicts)
 
-
-	write_html(curr_directory, group_dicts)
+	write_html(curr_directory, curr_group_dicts)
 
 
 main()
-
-
-#SDDC
