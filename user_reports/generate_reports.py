@@ -32,6 +32,7 @@ class Directory:
 		self.categories['member_types'] = []
 		self.current_date = ''
 
+
 class User:
 	def __init__(self, uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources, location, stages, active, member_types):
 		self.uid = uid #[STRING]   user id
@@ -585,11 +586,6 @@ def generate_pdf(name):
 	pdfkit.from_file('./html_report.html', output) 
 
 
-def get_differences():
-	
-
-
-
 def write_html(directory, group_dicts):
 
 	try:
@@ -637,12 +633,10 @@ def write_html(directory, group_dicts):
 
 			text = ''
 
-			if (category == 'stages') or (category == 'member_types'):
-				for item in sub_dict:
-					text += '<tr><td>'+item+'</td>'
-					text += '<td class="count">'+str(sub_dict[item])+'</td></tr>'
-			else:
-				items, counts = 
+			for item in sub_dict:
+				text += '<tr><td>'+item+'</td>'
+				text += '<td class="count">'+str(sub_dict[item])+'</td></tr>'
+
 
 			text_dict[category] = text
 
@@ -680,17 +674,17 @@ def main():
 	export_name, date = get_filename(export_dir_name)
 	export_path = export_dir_name + export_name
 
-	directory = Directory()
-	directory.current_date = date
+	curr_directory = Directory()
+	curr_directory.current_date = date
 
 	group_dir_name = "./data/group_data/"
-	directory.group_names = read_group_names(group_dir_name)
+	curr_directory.group_names = read_group_names(group_dir_name)
 	
-	directory.users = read_users(export_path, directory)
-	directory.users.sort(key=lambda user:user.score, reverse=True)
+	curr_directory.users = read_users(export_path, curr_directory)
+	curr_directory.users.sort(key=lambda user:user.score, reverse=True)
 
-	sum_dict = create_sum_dict(directory)
-	group_dicts = create_group_dicts(directory)
+	sum_dict = create_sum_dict(curr_directory)
+	group_dicts = create_group_dicts(curr_directory)
 
 	handle_report_folder()
 
@@ -700,7 +694,7 @@ def main():
 	# generate_pdf(directory, group_dicts)
 
 
-	write_html(directory, group_dicts)
+	write_html(curr_directory, group_dicts)
 
 
 main()
