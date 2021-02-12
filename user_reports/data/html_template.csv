@@ -7,6 +7,11 @@
 
 		<style type="text/css">
 
+			table { page-break-inside:auto }
+		    tr    { page-break-inside:avoid; page-break-after:auto }
+		    thead { display:table-header-group }
+		    tfoot { display:table-footer-group }
+
 			.jumbotron{
 				margin-bottom: 0px;
 				padding-bottom: 50px;
@@ -14,15 +19,22 @@
   				background-size: cover;
   				text-align: center;
   				color: #fff;
-    			text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 			}
 
 			.title{
 				padding-bottom: 25px;
+				text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 			}
 
 			.group_logo{
 				border-radius: 8px;
+			}
+
+			.card{
+				margin-bottom: 15px;
+				width: 100%;
+				page-break-inside:avoid;
+				page-break-after:auto;
 			}
 
 			.card-header{
@@ -43,119 +55,150 @@
 				padding-left: 20px;
 				text-align: center;
 			}
+			
+			.entry_table{
+				width: 100%;
+				margin-top: -6px;
+				margin-bottom: -5px;
+			}
+
+			.no_space{
+				padding: 0px;
+				margin: 0px;
+				margin-bottom: 10px;
+			}
 
 		</style>
 
 	</head>
 
 	<body>
+	
+		<div id="header">
 
-		<div class="jumbotron jumbotron-fluid">
-			<h2 class="title">[INSERT GROUP TITLE]</h2>
-			<img class="group_logo" src="[INSERT GROUP LOGO]">
-		</div>
+			<div class="jumbotron jumbotron-fluid">
+				<h2 class="title">[INSERT GROUP TITLE]</h2>
+				<img class="group_logo" src="[INSERT GROUP LOGO]">
+			</div>
 
-		<div class="d-flex bg-secondary" style="margin-bottom: 25px;">
-			<div style="display: inline-block;">
-				<div class="mr-auto p-2 text-white">Number of Users: [INSERT NUM USERS]</div>
-				<div class="p-2 text-white">Report Date: [INSERT DATE]</div>
+			<div class="d-flex bg-secondary" style="margin-bottom: 25px;">
+				<div style="display: inline-block;">
+					<div class="mr-auto p-2 text-white">Number of Users: [INSERT NUM USERS]</div>
+					<div class="p-2 text-white">Report Date: [INSERT DATE]</div>
+				</div>
 			</div>
 		</div>
 
 
+		<div id="body" class="container-fluid no_space">
 
-		<div class="container-fluid">
-
-			<div style="display: inline-block;">
-
-				<div style="float: left"class="card">
-
-					<div class="card-header">Business Stages</div>
-					
-					<div class="card-body">
-						
-						<table id="stages">
-							[INSERT STAGE ENTRIES]
-						</table>
-
+			<div id="first_row" class="no_space">
+				<div class="col-6 no_space" style="float: left; padding-right: 10px;">
+					<div class="card no_space">
+						<div class="card-header">Business Stages</div>
+							<div class="card-body table-responsive">
+								<table id="stages" class="entry_table">
+									[INSERT STAGE ENTRIES]
+								</table>
+							</div>
 					</div>
-
 				</div>
-
-				<div style="float: left"class="card">
-
-					<div class="card-header">Member Types</div>
-					
-					<div class="card-body">
-						
-						<table id="member_type">
-							[INSERT MEMBER TYPE ENTRIES]
-						</table>
-
+				
+				<div class="col-6 no_space" style="float: left; padding-left: 10px;">
+					<div class="card no_space">
+						<div class="card-header">Member Type</div>
+							<div class="card-body table-responsive">
+								<table id="stages" class="entry_table">
+									[INSERT MEMBER TYPE ENTRIES]
+								</table>
+							</div>
 					</div>
-
 				</div>
-
-				<div style="float: left"class="card">
-
-					<div class="card-header">Interested Resources</div>
-					
-					<div class="card-body">
-						
-						<table id="resources">
-							[INSERT INTEREST ENTRIES]
-						</table>
-
-					</div>
-
-				</div>
-
 			</div>
 
-			<div style="display: inline-block;">
-
-				<div style="float: left"class="card">
-
-					<div class="card-header">Listed Locations</div>
-					
-					<div class="card-body">
-						
-						<table id="locations">
-							[INSERT LOCATION ENTRIES]
-						</table>
-
+			<div id="second_row no_space" style="display: inline;">
+				<div class="col-12 no_space" style="float: left">
+					<div class="card no_space">
+						<div class="card-header">Listed Locations</div>
+						<div class="card-body table-responsive">
+							<div class="col-4" style="float:left; padding-left: 10px;">
+								<table id="member_type" class="entry_table">
+									[INSERT LOCATION 1 ENTRIES]
+								</table>
+							</div>
+							<div class="col-4" style="float:left; padding-right: 10px; border-right: 1px solid #000; border-left: 1px solid #000;">
+								<table id="member_type" class="entry_table">
+									[INSERT LOCATION 2 ENTRIES]
+								</table>
+							</div>
+							<div class="col-4" style="float:left; padding-left: 10px;">
+								<table id="member_type" class="entry_table">
+									[INSERT LOCATION 3 ENTRIES]
+								</table>
+							</div>
+						</div>
 					</div>
-
 				</div>
+			</div>
 
-				<div style="float: left"class="card">
-
-					<div class="card-header">Listed Expertises</div>
-					
-					<div class="card-body">
-						
-						<table id="expertises">
-							[INSERT EXPERTISE ENTRIES]
-						</table>
-
+			<div id="third_row no_space" style="display: inline;">
+				<div class="col-12 no_space" style="float: left">
+					<div class="card no_space">
+						<div class="card-header">Interested Resources</div>
+						<div class="card-body table-responsive">
+							<div class="col-6" style="float:left; padding-right: 10px; border-right: 1px solid #000;">
+								<table id="member_type" class="entry_table">
+									[INSERT INTEREST 1 ENTRIES]
+								</table>
+							</div>
+							<div class="col-6" style="float:left; padding-left: 10px;">
+								<table id="member_type" class="entry_table">
+									[INSERT INTEREST 2 ENTRIES]
+								</table>
+							</div>
+						</div>
 					</div>
-
 				</div>
+			</div>
 
-				<div style="float: left"class="card">
-
-					<div class="card-header">Listed Industries</div>
-					
-					<div class="card-body">
-						
-						<table id="industries">
-							[INSERT INDUSTRY ENTRIES]
-						</table>
-
+			<div id="fourth_row no_space" style="display: inline;">
+				<div class="col-12 no_space" style="float: left">
+					<div class="card no_space">
+						<div class="card-header">Listed Expertises</div>
+						<div class="card-body table-responsive">
+							<div class="col-6" style="float:left; padding-right: 10px; border-right: 1px solid #000;">
+								<table id="member_type" class="entry_table">
+									[INSERT EXPERTISE 1 ENTRIES]
+								</table>
+							</div>
+							<div class="col-6" style="float:left; padding-left: 10px;">
+								<table id="member_type" class="entry_table">
+									[INSERT EXPERTISE 2 ENTRIES]
+								</table>
+							</div>
+						</div>
 					</div>
-
 				</div>
+			</div>
 
+			<div id="fifth_row no_space" style="display: inline;">
+				<div class="col-12 no_space" style="float: left">
+					<div class="card no_space">
+						<div class="card-header">Listed Industries</div>
+						<div class="card-body table-responsive">
+							<div class="col-6" style="float:left; padding-right: 10px; border-right: 1px solid #000;">
+								<table id="member_type" class="entry_table">
+									[INSERT INDUSTRY 1 ENTRIES]
+								</table>
+							</div>
+							<div class="col-6" style="float:left; padding-left: 10px;">
+								<table id="member_type" class="entry_table">
+									[INSERT INDUSTRY 2 ENTRIES]
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 
 		</div>

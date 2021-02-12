@@ -240,6 +240,28 @@ def create_sum_dict(directory):
 
 
 	return sum_dict
+
+
+def create_diff_group_dict(curr_group_directory, prev_group_directory):
+
+	diff_group_dict = {}
+
+	for gid in curr_group_directory.keys():
+		diff_group_dict[gid] = {}
+		for category in curr_group_directory[gid].keys():
+			category_dict = {}
+			for item in curr_group_directory[gid][category].keys():
+				diff = 0
+				if gid in prev_group_directory:
+					if item in prev_group_directory[gid][category]:
+						diff = curr_group_directory[gid][category][item] - prev_group_directory[gid][category][item]
+					else:
+						diff = curr_group_directory[gid][category][item]
+
+				category_dict[item] = diff
+			diff_group_dict[gid][category] = category_dict
+
+	return diff_group_dict
 		
 
 def fill_directory(directory, category, data):
@@ -604,7 +626,38 @@ def generate_pdf(name):
 	pdfkit.from_file('./html_report.html', output) 
 
 
-def write_html(directory, group_dicts):
+def split_dict(full_dict, num):
+
+	dicts = []
+	keys = list(full_dict.keys())
+	items = list(full_dict.values())
+
+	full = len(keys)
+
+	status = 0
+
+	for i in range(num):
+		sub_dict = {}
+
+		length = 0
+		if i == num-1:
+			if num == 3:
+				length = full - (math.ceil(full/3) * 2)
+			else:
+				length = full - math.ceil(full/2)
+		else:
+			length = math.ceil(full/num)
+
+		for j in range(status,length+status):
+			sub_dict[keys[j]] = items[j]
+
+		status += length
+		dicts.append(sub_dict)
+		
+	return dicts
+
+
+def write_html(curr_directory, prev_directory, group_dicts, diff_group_dict):
 
 	try:
 		os.mkdir('./reports/group_reports')
@@ -620,26 +673,33 @@ def write_html(directory, group_dicts):
 				original_template += item
 
 
-	for group in directory.groups:
+	for group in curr_directory.groups:
 
 		template = original_template
 		gid = group.gid
 		name = group.name
 
+		size_diff = None
+		if prev_directory != None:
+			prev_group = get_group(prev_directory, gid)
+			if prev_group != None:
+				size_diff = len(group.members) - len(prev_group.members)
+
+
 		path = "./data/group_data/cover_photos/"
 		files = [f for f in listdir(path) if isfile(join(path, f))]
-		background_name = "default.jfif"
-		for file in files:
-			if str(gid) in file:
-				background_name = file
+		background_name = "default.jpg"
+		# for file in files:
+		# 	if str(gid) in file:
+		# 		background_name = file
 		background = path + background_name
 
 		path = "./data/group_data/logos/"
 		files = [f for f in listdir(path) if isfile(join(path, f))]
 		logo_name = "default.jpg"
-		for file in files:
-			if str(gid) in file:
-				logo_name = file
+		# for file in files:
+		# 	if str(gid) in file:
+		# 		logo_name = file
 		logo = path + logo_name
 		
 		categories = ['locations','industries','expertises','interests','stages','member_types']
@@ -649,27 +709,95 @@ def write_html(directory, group_dicts):
 		for category in categories:
 			sub_dict = group_dict[category]
 
-			text = ''
+			#single col tables
+			if (category == "stages") or (category == "member_types"):
+				text = ''
+				for item in sub_dict:
+					text += '<tr><td>'+item+'</td>'
+					text += '<td class="count">'+str(sub_dict[item])
 
-			for item in sub_dict:
-				text += '<tr><td>'+item+'</td>'
-				text += '<td class="count">'+str(sub_dict[item])+'</td></tr>'
+					if diff_group_dict != None:
+						diff = diff_group_dict[gid][category][item]
+						if diff < 0:
+							text += ' ('+str(diff)+')'
+						elif diff > 0:
+							text += ' (+'+str(diff)+')'
 
+					text += '</td></tr>'
 
-			text_dict[category] = text
+				text_dict[category] = text
+
+			#double col tables
+			else:
+				if category == "locations":
+					num = 3
+				else:
+					num = 2
+				dicts = split_dict(sub_dict, num)
+				for i in range(len(dicts)):
+					text = ''
+					new_sub_dict = dicts[i]
+					for item in new_sub_dict:
+						text += '<tr><td>'+item+'</td>'
+						text += '<td class="count">'+str(new_sub_dict[item])
+
+						if diff_group_dict != None:
+							diff = diff_group_dict[gid][category][item]
+							if diff < 0:
+								text += ' ('+str(diff)+')'
+							elif diff > 0:
+								text += ' (+'+str(diff)+')'
+
+						text += '</td></tr>'
+
+					cat = category+"_"+str(i+1)
+
+					text_dict[cat] = text
+
 
 		template = template.replace('[INSERT GROUP BACKGROUND]', background)
 		template = template.replace('[INSERT GROUP LOGO]', logo)
 		template = template.replace('[INSERT GROUP TITLE]', name)
 		template = template.replace('[INSERT STAGE ENTRIES]', text_dict['stages'])
 		template = template.replace('[INSERT MEMBER TYPE ENTRIES]', text_dict['member_types'])
-		template = template.replace('[INSERT INTEREST ENTRIES]', text_dict['interests'])
-		template = template.replace('[INSERT LOCATION ENTRIES]', text_dict['locations'])
-		template = template.replace('[INSERT EXPERTISE ENTRIES]', text_dict['expertises'])
-		template = template.replace('[INSERT INDUSTRY ENTRIES]', text_dict['industries'])
 
-		template = template.replace('[INSERT NUM USERS]', str(len(group.members)))
-		template = template.replace('[INSERT DATE]', directory.current_date)
+		template = template.replace('[INSERT INTEREST 1 ENTRIES]', text_dict['interests_1'])
+		template = template.replace('[INSERT INTEREST 2 ENTRIES]', text_dict['interests_2'])
+
+		template = template.replace('[INSERT LOCATION 1 ENTRIES]', text_dict['locations_1'])
+		template = template.replace('[INSERT LOCATION 2 ENTRIES]', text_dict['locations_2'])
+		template = template.replace('[INSERT LOCATION 3 ENTRIES]', text_dict['locations_3'])
+
+		template = template.replace('[INSERT EXPERTISE 1 ENTRIES]', text_dict['expertises_1'])
+		template = template.replace('[INSERT EXPERTISE 2 ENTRIES]', text_dict['expertises_2'])
+
+		template = template.replace('[INSERT INDUSTRY 1 ENTRIES]', text_dict['industries_1'])
+		template = template.replace('[INSERT INDUSTRY 2 ENTRIES]', text_dict['industries_2'])
+
+
+
+		size = str(len(group.members))
+		if size_diff != None:
+			if size_diff > 0:
+				size += '   (+'+str(size_diff)+')'
+			elif size_diff < 0:
+				size += '   ('+str(size_diff)+')'
+
+		template = template.replace('[INSERT NUM USERS]', size)
+
+
+
+
+
+		date = curr_directory.current_date
+		
+		prev_group = get_group(prev_directory, gid)
+		if prev_group != None:
+			date += '<br>Previous Report Date: ' + prev_directory.current_date
+
+		template = template.replace('[INSERT DATE]', date)
+
+
 
 		html = open("./html_report.html","w")
 		html.write(template)
@@ -703,13 +831,10 @@ def main():
 		if len(dates) > 1:
 			prev_date = dates[1]
 
-
-
 	curr_date = format_date(curr_date)
 
 	export_name = "User_export_" + dates[0] + ".xlsx"
 	export_path = export_dir_name + export_name
-
 
 	curr_directory = Directory()
 	curr_directory.current_date = curr_date
@@ -723,6 +848,9 @@ def main():
 	curr_sum_dict = create_sum_dict(curr_directory)
 	curr_group_dicts = create_group_dicts(curr_directory)
 
+	diff_group_dict = None
+	prev_directory = None
+
 	if prev_date != None:
 		prev_date = format_date(prev_date)
 		export_name = "User_export_" + dates[1] + ".xlsx"
@@ -735,18 +863,14 @@ def main():
 		prev_directory.users = read_users(export_path, prev_directory)
 		prev_directory.users.sort(key=lambda user:user.score, reverse=True)
 
-		prev_sum_dict = create_sum_dict(curr_directory)
-		prev_group_dicts = create_group_dicts(curr_directory)
+		prev_sum_dict = create_sum_dict(prev_directory)
+		prev_group_dicts = create_group_dicts(prev_directory)
 
-		# write_html(prev_directory, prev_group_dicts)
+		diff_group_dict = create_diff_group_dict(curr_group_dicts, prev_group_dicts)
 
-
-	# generate_sum_report(directory, sum_dict)
+	# generate_sum_report(curr_directory, curr_sum_dict)
 	# generate_group_reports(directory, group_dicts)
 
-	# generate_pdf(directory, group_dicts)
-
-	write_html(curr_directory, curr_group_dicts)
-
+	write_html(curr_directory, prev_directory, curr_group_dicts, diff_group_dict)
 
 main()
