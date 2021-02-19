@@ -1,3 +1,4 @@
 # Personally Set Files to Ignore
 reports/*
 venv/*
+/html_report.html
