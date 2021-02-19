@@ -65,7 +65,7 @@
 			.no_space{
 				padding: 0px;
 				margin: 0px;
-				margin-bottom: 10px;
+				margin-top: 10px;
 			}
 
 		</style>
@@ -90,7 +90,7 @@
 		</div>
 
 
-		<div id="body" class="container-fluid no_space">
+		<div id="body" class="container-fluid" style="margin-right: 5px;">
 
 			<div id="first_row" class="no_space">
 				<div class="col-6 no_space" style="float: left; padding-right: 10px;">
