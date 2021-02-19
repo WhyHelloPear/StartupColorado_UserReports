@@ -927,17 +927,28 @@ def handle_report_folder():
 	error = False
 
 	try:
-		shutil.rmtree('./reports')
+		os.mkdir('./reports')
+		os.mkdir('./reports/Group_Reports')
 	except OSError as e:
 		pass
 
-	try:
-		os.mkdir('./reports')
-		os.mkdir('./reports/Group_Reports')
-	except OSError as e:  ## if failed, report it back to the user ##
-		print ("ERROR: ENSURE REPORTS FOLDER IS CLOSED")
-		print ("ERROR: CLOSE ALL OPEN PDF REPORTS")
-		error = True
+	paths = ['./reports/', './reports/Group_Reports/']
+
+	for path in paths:
+
+		files = [f for f in listdir(path) if isfile(join(path, f))]	
+		for file in files:
+			try:
+				os.remove(path+file)
+			except OSError as e:
+				print(path,file)
+				print ("ERROR: CLOSE ALL OPEN PDF REPORTS!")
+				error = True
+			if error:
+				break
+		if error:
+			break
+
 
 	return error
 
