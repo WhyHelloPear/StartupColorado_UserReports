@@ -389,7 +389,6 @@ def generate_pdf(name, path):
 		'margin-right': '0in',
 		'margin-bottom': '0in',
 		'margin-left': '0in',
-		'encoding': 'UTF-8',
 		'quiet': '',
 		}
 
