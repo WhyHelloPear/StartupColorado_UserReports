@@ -66,6 +66,18 @@ class Group:
 		self.members = []
 
 
+
+#======================================
+# HELPER FUNCTIONS
+#======================================
+def get_max_string_len(data):
+	value = 0
+	for item in data:
+		if len(item) > value:
+			value = len(item)
+	return value
+
+
 def get_group(directory, gid):
 	value = None
 	for group in directory.groups:
@@ -73,7 +85,15 @@ def get_group(directory, gid):
 			value = group
 			break
 	return value
-		
+
+
+def get_index(categories, category):
+	index = None
+	if category in categories:
+		index = categories.index(category)
+
+	return index
+
 
 def add_group_member(directory, user, gid):
 	gid = int(gid)
@@ -82,6 +102,31 @@ def add_group_member(directory, user, gid):
 		group = Group(gid, directory.group_names[gid])
 		directory.groups.append(group)
 	group.members.append(user)
+
+
+def fix_list(data):
+	result = []
+
+	for item in data:
+		if type(item) == str:
+			if len(item) > 0:
+				if item[0] == ' ':
+					item = item[1:]
+		if item != '':
+			result.append(item)
+
+	return result
+
+
+def format_date(date):
+	date = date.split('-')
+	date = date[1]+'/'+date[2]+'/'+date[0]
+	return date
+
+
+#======================================
+# MAIN FUNCTIONS
+#======================================
 	
 
 #Creates and returns a dictionary that holds all groups and the selected demographics of each group
@@ -264,6 +309,25 @@ def create_diff_group_dict(curr_group_directory, prev_group_directory):
 	return diff_group_dict
 		
 
+def create_diff_sum_dict(curr_sum_directory, prev_sum_directory):
+
+	diff_sum_dict = {}
+
+	for category in curr_sum_directory.keys():
+		category_dict = {}
+		for item in curr_sum_directory[category].keys():
+			diff = 0
+			if item in prev_sum_directory[category]:
+				diff = curr_sum_directory[category][item] - prev_sum_directory[category][item]
+			else:
+				diff = curr_sum_directory[category][item]
+
+			category_dict[item] = diff
+		diff_sum_dict[category] = category_dict
+
+	return diff_sum_dict
+
+
 def fill_directory(directory, category, data):
 	filtered_data = []
 	for item in data:
@@ -274,28 +338,6 @@ def fill_directory(directory, category, data):
 		if item not in filtered_data:
 			filtered_data.append(item)
 	return filtered_data
-
-
-def fix_list(data):
-	result = []
-
-	for item in data:
-		if type(item) == str:
-			if len(item) > 0:
-				if item[0] == ' ':
-					item = item[1:]
-		if item != '':
-			result.append(item)
-
-	return result
-
-
-def get_index(categories, category):
-	index = None
-	if category in categories:
-		index = categories.index(category)
-
-	return index
 
 
 def read_users(path, directory):
@@ -521,12 +563,6 @@ def get_dates(path):
 	return dates
 
 
-def format_date(date):
-	date = date.split('-')
-	date = date[1]+'/'+date[2]+'/'+date[0]
-	return date
-
-
 def handle_report_folder():
 	try:
 		shutil.rmtree('./reports')
@@ -539,80 +575,7 @@ def handle_report_folder():
 		print ("Error: reports folder already defined")
 
 
-def generate_group_reports(directory, group_dicts):
-
-	os.mkdir('./reports/group_reports/')
-
-	categories = ['locations','industries','expertises','interests','stages','member_types']
-
-	for group in directory.groups:
-		gid = group.gid
-		name = group.name.replace(' ', '_')
-
-		workbook = xlsxwriter.Workbook('reports/group_reports/'+str(gid)+'_'+name+'.xlsx')
-		worksheet = workbook.add_worksheet()
-
-
-		col = 0
-		for category in categories:
-
-			row = 2
-			worksheet.write(row-1, col, category)
-			worksheet.write(row-1, col+1, 'Count')
-
-			for key in group_dicts[gid][category].keys():
-
-				worksheet.write(row, col, key)
-				worksheet.write(row, col+1, group_dicts[gid][category][key])
-				row += 1
-
-			col += 3
-
-		merge_format = workbook.add_format({'align': 'center','valign': 'vcenter'})
-		worksheet.merge_range('A1:Q1', str(gid)+": "+group.name, merge_format)
-
-		workbook.close()
-
-
-def generate_sum_report(directory, sum_dict):
-
-	# os.mkdir('./reports/group_reports/')
-
-	categories = ['locations','industries','expertises','interests','stages','member_types']
-
-	workbook = xlsxwriter.Workbook('reports/sum_report.xlsx')
-	worksheet = workbook.add_worksheet()
-
-	col = 0
-	for category in categories:
-
-		row = 2
-		worksheet.write(row-1, col, category)
-		worksheet.write(row-1, col+1, 'Count')
-
-		for key in sum_dict[category].keys():
-
-			worksheet.write(row, col, key)
-			worksheet.write(row, col+1, sum_dict[category][key])
-			row += 1
-
-		col += 3
-
-	merge_format = workbook.add_format({'align': 'center','valign': 'vcenter'})
-	worksheet.merge_range('A1:Q1', "User Breakdown", merge_format)
-
-	workbook.close()
-
-
-def get_max_string_len(data):
-	value = 0
-	for item in data:
-		if len(item) > value:
-			value = len(item)
-	return value
-
-
-def generate_pdf(name):
+def generate_pdf(name, path):
 	options = {
 		'page-size': 'A4',
 		'margin-top': '0in',
@@ -622,7 +585,7 @@ def generate_pdf(name):
 		'encoding': "UTF-8",
 	}
 
-	output = './reports/group_reports/'+ name + ".pdf"
+	output = path + name + ".pdf"
 	pdfkit.from_file('./html_report.html', output) 
 
 
@@ -657,7 +620,7 @@ def split_dict(full_dict, num):
 	return dicts
 
 
-def write_html(curr_directory, prev_directory, group_dicts, diff_group_dict):
+def generate_group_pdf(curr_directory, prev_directory, group_dicts, diff_group_dict):
 
 	try:
 		os.mkdir('./reports/group_reports')
@@ -666,7 +629,7 @@ def write_html(curr_directory, prev_directory, group_dicts, diff_group_dict):
 
 	original_template = ""
 
-	with open('./data/html_template.csv', newline='') as csvfile:
+	with open('./data/html_template_group.csv', newline='') as csvfile:
 		file = csv.reader(csvfile)
 		for row in file:
 			for item in row:
@@ -679,11 +642,23 @@ def write_html(curr_directory, prev_directory, group_dicts, diff_group_dict):
 		gid = group.gid
 		name = group.name
 
+		date = curr_directory.current_date
+		
+		prev_group = get_group(prev_directory, gid)
+		if prev_group != None:
+			date += '<br>Previous Report Date: ' + prev_directory.current_date
+
 		size_diff = None
 		if prev_directory != None:
-			prev_group = get_group(prev_directory, gid)
 			if prev_group != None:
 				size_diff = len(group.members) - len(prev_group.members)
+
+		size = str(len(group.members))
+		if size_diff != None:
+			if size_diff > 0:
+				size += '   (+'+str(size_diff)+')'
+			elif size_diff < 0:
+				size += '   ('+str(size_diff)+')'
 
 
 		path = "./data/group_data/cover_photos/"
@@ -760,62 +735,149 @@ def write_html(curr_directory, prev_directory, group_dicts, diff_group_dict):
 		template = template.replace('[INSERT GROUP TITLE]', name)
 		template = template.replace('[INSERT STAGE ENTRIES]', text_dict['stages'])
 		template = template.replace('[INSERT MEMBER TYPE ENTRIES]', text_dict['member_types'])
-
 		template = template.replace('[INSERT INTEREST 1 ENTRIES]', text_dict['interests_1'])
 		template = template.replace('[INSERT INTEREST 2 ENTRIES]', text_dict['interests_2'])
-
 		template = template.replace('[INSERT LOCATION 1 ENTRIES]', text_dict['locations_1'])
 		template = template.replace('[INSERT LOCATION 2 ENTRIES]', text_dict['locations_2'])
 		template = template.replace('[INSERT LOCATION 3 ENTRIES]', text_dict['locations_3'])
-
 		template = template.replace('[INSERT EXPERTISE 1 ENTRIES]', text_dict['expertises_1'])
 		template = template.replace('[INSERT EXPERTISE 2 ENTRIES]', text_dict['expertises_2'])
-
 		template = template.replace('[INSERT INDUSTRY 1 ENTRIES]', text_dict['industries_1'])
 		template = template.replace('[INSERT INDUSTRY 2 ENTRIES]', text_dict['industries_2'])
-
-
-
-		size = str(len(group.members))
-		if size_diff != None:
-			if size_diff > 0:
-				size += '   (+'+str(size_diff)+')'
-			elif size_diff < 0:
-				size += '   ('+str(size_diff)+')'
-
 		template = template.replace('[INSERT NUM USERS]', size)
-
-
-
-
-
-		date = curr_directory.current_date
-		
-		prev_group = get_group(prev_directory, gid)
-		if prev_group != None:
-			date += '<br>Previous Report Date: ' + prev_directory.current_date
-
 		template = template.replace('[INSERT DATE]', date)
-
 
 
 		html = open("./html_report.html","w")
 		html.write(template)
-		
-		name = name.replace(' ','_')
-		html_name = str(gid)+'_'+name
 		html.close()
 
 		file_name = name.replace(' ','_')
 		file_name = str(gid) + '_' + file_name
-		generate_pdf(file_name)
+
+		path = './reports/group_reports/'
+		generate_pdf(file_name, path)
 
 		if os.path.exists("./html_report.html"):
 			os.remove("./html_report.html")
 
 
-def main():
+def generate_sum_pdf(curr_directory, prev_directory, sum_dict, diff_sum_dict):
 
+	template = ""
+
+	with open('./data/html_template_sum.csv', newline='') as csvfile:
+		file = csv.reader(csvfile)
+		for row in file:
+			for item in row:
+				template += item
+
+
+	name = "User Sum Report"
+	background = "./data/group_data/cover_photos/default.jpg"
+	logo = "./data/group_data/logos/default.jpg"
+
+
+	date = curr_directory.current_date
+	if prev_directory != None:
+		date += '<br>Previous Report Date: ' + prev_directory.current_date
+
+	size_diff = None
+	if prev_directory != None:
+		size_diff = len(curr_directory.users) - len(prev_directory.users)
+
+	size = str(len(curr_directory.users))
+	if size_diff != None:
+		if size_diff > 0:
+			size += '   (+'+str(size_diff)+')'
+		elif size_diff < 0:
+			size += '   ('+str(size_diff)+')'
+
+	
+	categories = ['locations','industries','expertises','interests','stages','member_types']
+	text_dict = {}
+
+	for category in categories:
+		sub_dict = sum_dict[category]
+
+		#single col tables
+		if (category == "stages") or (category == "member_types"):
+			text = ''
+			for item in sub_dict:
+				text += '<tr><td>'+item+'</td>'
+				text += '<td class="count">'+str(sub_dict[item])
+
+				if diff_sum_dict != None:
+					diff = diff_sum_dict[category][item]
+					if diff < 0:
+						text += ' ('+str(diff)+')'
+					elif diff > 0:
+						text += ' (+'+str(diff)+')'
+
+				text += '</td></tr>'
+
+			text_dict[category] = text
+
+		#double col tables
+		else:
+			if category == "locations":
+				num = 3
+			else:
+				num = 2
+			dicts = split_dict(sub_dict, num)
+			for i in range(len(dicts)):
+				text = ''
+				new_sub_dict = dicts[i]
+				for item in new_sub_dict:
+					text += '<tr><td>'+item+'</td>'
+					text += '<td class="count">'+str(new_sub_dict[item])
+
+					if diff_sum_dict != None:
+						diff = diff_sum_dict[category][item]
+						if diff < 0:
+							text += ' ('+str(diff)+')'
+						elif diff > 0:
+							text += ' (+'+str(diff)+')'
+
+					text += '</td></tr>'
+
+				cat = category+"_"+str(i+1)
+
+				text_dict[cat] = text
+
+
+	template = template.replace('[INSERT GROUP BACKGROUND]', background)
+	template = template.replace('[INSERT GROUP LOGO]', logo)
+	template = template.replace('[INSERT GROUP TITLE]', name)
+	template = template.replace('[INSERT STAGE ENTRIES]', text_dict['stages'])
+	template = template.replace('[INSERT MEMBER TYPE ENTRIES]', text_dict['member_types'])
+	template = template.replace('[INSERT INTEREST 1 ENTRIES]', text_dict['interests_1'])
+	template = template.replace('[INSERT INTEREST 2 ENTRIES]', text_dict['interests_2'])
+	template = template.replace('[INSERT LOCATION 1 ENTRIES]', text_dict['locations_1'])
+	template = template.replace('[INSERT LOCATION 2 ENTRIES]', text_dict['locations_2'])
+	template = template.replace('[INSERT LOCATION 3 ENTRIES]', text_dict['locations_3'])
+	template = template.replace('[INSERT EXPERTISE 1 ENTRIES]', text_dict['expertises_1'])
+	template = template.replace('[INSERT EXPERTISE 2 ENTRIES]', text_dict['expertises_2'])
+	template = template.replace('[INSERT INDUSTRY 1 ENTRIES]', text_dict['industries_1'])
+	template = template.replace('[INSERT INDUSTRY 2 ENTRIES]', text_dict['industries_2'])
+	template = template.replace('[INSERT NUM USERS]', size)
+	template = template.replace('[INSERT DATE]', date)
+
+
+
+	html = open("./html_report.html","w")
+	html.write(template)
+	html.close()
+
+	file_name = name.replace(' ','_')
+	path = './reports/'
+	generate_pdf(file_name, path)
+
+	if os.path.exists("./html_report.html"):
+		os.remove("./html_report.html")
+
+
+def main():
 	handle_report_folder()
 
 	export_dir_name = "./data/user_exports/"
@@ -867,10 +929,10 @@ def main():
 		prev_group_dicts = create_group_dicts(prev_directory)
 
 		diff_group_dict = create_diff_group_dict(curr_group_dicts, prev_group_dicts)
+		diff_sum_dict = create_diff_sum_dict(curr_sum_dict, prev_sum_dict)
 
-	# generate_sum_report(curr_directory, curr_sum_dict)
-	# generate_group_reports(directory, group_dicts)
+	generate_group_pdf(curr_directory, prev_directory, curr_group_dicts, diff_group_dict)
+	generate_sum_pdf(curr_directory, prev_directory, curr_sum_dict, diff_sum_dict)
 
-	write_html(curr_directory, prev_directory, curr_group_dicts, diff_group_dict)
 
 main()
