@@ -22,6 +22,7 @@ class Directory:
 		self.categories['industry'] = []
 		self.categories['interests'] = []
 		self.categories['resources'] = []
+		self.categories['stages'] = []
 		self.categories['member_types'] = []
 		self.current_date = ''
 
@@ -34,10 +35,8 @@ class User:
 		self.email = email
 		self.last_active = last_active #date profile was last active
 		self.created = created #date profile was created
-		self.count = count # [INT]   number of times signed in
-		self.score = score # [INT]
-		
-
+		self.count = int(count) # [INT]   number of times signed in
+		self.score = int(score) # [INT]
 		self.categories = {}
 		self.categories['groups'] = groups
 		self.categories['expertise'] = expertise
@@ -46,9 +45,7 @@ class User:
 		self.categories['resources'] = resources
 		self.categories['stages'] = stages
 		self.categories['member_types'] = member_types
-		
 		self.location = location
-
 		self.active = active
 		
 
@@ -80,7 +77,7 @@ def get_group(directory, gid):
 
 
 def get_index(categories, category):
-	index = None
+	index = ""
 	if category in categories:
 		index = categories.index(category)
 
@@ -121,6 +118,7 @@ def split_dict(full_dict, num):
 	dicts = []
 	keys = list(full_dict.keys())
 	items = list(full_dict.values())
+	# print(len(keys))
 
 	full = len(keys)
 
@@ -139,6 +137,9 @@ def split_dict(full_dict, num):
 			length = math.ceil(full/num)
 
 		for j in range(status,length+status):
+			if j >= full:
+				break
+			# print(j)
 			sub_dict[keys[j]] = items[j]
 
 		status += length
@@ -256,97 +257,94 @@ def read_users(path, directory):
 
 	data = df.to_numpy()
 
+	fields = [
+		"ID",
+		"First name",
+		"Last name",
+		"Email",
+		"Last sign in date",
+		"Created at",
+		"Count of sign in",
+		"Engagement Scoring:Current score",
+		"Groups Member:Group Member",
+		"_281d4ac7_Expertise",
+		"_07417723_Industry_1",
+		"_ec0c314f_Resources_I_Am_Interested_In",
+		"_e63e1ef3_Resources",
+		"_0318eefd_Business_Stage",
+		"SubNetworks:Title",
+		"Live Location:Address",
+		"Live Location:City"
+	]
+
+	lists = [
+		"Groups Member:Group Member",
+		"_281d4ac7_Expertise",
+		"_07417723_Industry_1",
+		"_ec0c314f_Resources_I_Am_Interested_In",
+		"_e63e1ef3_Resources",
+		"_0318eefd_Business_Stage",
+		"SubNetworks:Title"
+	]
+
 	for row in data:
+		info = []
 
-		uid = ""
-		index = get_index(categories, "ID")
-		if index != None:
-			uid = row[index]
+		user_data = {
+			"uid": "",
+			"first_name": "",
+			"last_name": "",
+			"email": "",
+			"last_active": "",
+			"created": "",
+			"count": "0",
+			"score": "0",
+			"groups": [],
+			"expertise": [],
+			"industry": [],
+			"interests": [],
+			"resources": [],
+			"stages": [],
+			"member_types": [],
+			"full_address": "",
+			"city": "",
+		}
 
-		first_name = ""
-		index = get_index(categories, "First name")
-		if index != None:
-			first_name = row[index]
+		list_categories = ["groups","expertise","industry","interests","resources","stages","member_types"]
 
-		last_name = ""
-		index = get_index(categories, "Last name")
-		if index != None:
-			last_name = row[index]
+		keys = list(user_data.keys())
+		for i in range(len(fields)):
+			field = fields[i]
+			index = get_index(categories, field)
+			entry = user_data[keys[i]]
 
-		email = ""
-		index = get_index(categories, "Email")
-		if index != None:
-			email = row[index]
+			if index != "":
 
-		last_active = ""
-		index = get_index(categories, "Last sign in date")
-		if index != None:
-			last_active = row[index].split(' ')[0]
+				if row[index] != "":
 
-		created = ""
-		index = get_index(categories, "Created at")
-		if index != None:
-			created = row[index].split(' ')[0]
+					if (field == "Last sign in date") or (field == "Created at"):
+						entry = row[index].split(' ')[0]
 
-		#number of times user has signed in (shows if user has activated their account or not)
-		count = 0
-		index = get_index(categories, "Count of sign in")
-		if index != None:
-			count = int(row[index])
+					elif field in lists:
+						fixed_list = fix_list(row[index].split(","))
+						if (field == "SubNetworks:Title") and ("Undefined" in fixed_list):
+							fixed_list.remove("Undefined")
+						entry = fill_directory(directory, list_categories.pop(0), fixed_list)
+
+					else:
+						entry = row[index]
+
+			user_data[keys[i]] = entry
 
 		active = False
-		if count > 0:
+		if int(user_data["count"]) > 0:
 			active = True
-
-		score = 0
-		index = get_index(categories, "Engagement Scoring:Current score")
-		if index != None:
-			if row[index] != '':
-				score = int(row[index])
-
-		groups = []
-		index = get_index(categories, "Groups Member:Group Member")
-		if index != None:
-			groups = fix_list(row[index].split(","))
-			groups = fill_directory(directory, 'groups', groups)
-
-		expertise = []
-		index = get_index(categories, "_281d4ac7_Expertise")
-		if index != None:
-			expertise = fix_list(row[index].split(","))
-			expertise = fill_directory(directory, 'expertise', expertise)
-
-		industry = []
-		index = get_index(categories, "_07417723_Industry_1")
-		if index != None:
-			industry = fix_list(row[index].split(","))
-			industry = fill_directory(directory, 'industry', industry)
-
-		interests = []
-		index = get_index(categories, "_ec0c314f_Resources_I_Am_Interested_In")
-		if index != None:
-			interests = fix_list(row[index].split(","))
-			interests = fill_directory(directory, 'interests', interests)
-
-		resources = []
-		index = get_index(categories, "_e63e1ef3_Resources")
-		if index != None:
-			resources = fix_list(row[index].split(","))
-			resources = fill_directory(directory, 'resources', resources)
 
 
 		location = "NO RECORDED LOCATION"
 
-		full_address = ""
-		index = get_index(categories, "Live Location:Address")
-		if index != None:
-			full_address = row[index] #full address
-
-		city = ""
-		index = get_index(categories, "Live Location:City")
-		if index != None:
-			city = row[index] #city
-		
+		city = user_data["city"]
+		full_address = user_data["full_address"]
 		if len(city) != 0:
 			location = city
 		else:
@@ -357,29 +355,31 @@ def read_users(path, directory):
 				else:
 					location = split[0]
 
-		stages = []
-		index = get_index(categories, "_0318eefd_Business_Stage")
-		if index != None:
-			stages = fix_list(row[index].split(","))
-			fill_directory(directory, 'groups', groups)
+		user_data["active"] = active
+		user_data["location"] = location
 
-
-
-		member_types = []
-		index = get_index(categories, "SubNetworks:Title")
-		if index != None:
-			member_types = fix_list(row[index].split(","))
-			if "Undefined" in member_types:
-				member_types.remove("Undefined")
-			fill_directory(directory, 'member_types', member_types)
-
-
-
-
-		user = User(uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources, location, stages, active, member_types)
+		user = User(
+			user_data["uid"],
+			user_data["first_name"],
+			user_data["last_name"],
+			user_data["email"],
+			user_data["last_active"],
+			user_data["created"],
+			user_data["count"],
+			user_data["score"],
+			user_data["groups"],
+			user_data["expertise"],
+			user_data["industry"],
+			user_data["interests"],
+			user_data["resources"],
+			user_data["location"],
+			user_data["stages"],
+			user_data["active"],
+			user_data["member_types"]
+		)
 		users.append(user)
 
-		for gid in groups:
+		for gid in user_data["groups"]:
 			add_group_member(directory, user, gid)
 
 	return users
@@ -485,7 +485,7 @@ def generate_group_pdf(curr_directory, prev_directory, group_dicts, diff_group_d
 			#double col tables
 			else:
 				if category == "locations":
-					num = 3
+					num = 4
 				else:
 					num = 2
 				dicts = split_dict(sub_dict, num)
@@ -520,6 +520,7 @@ def generate_group_pdf(curr_directory, prev_directory, group_dicts, diff_group_d
 		template = template.replace('[INSERT LOCATION 1 ENTRIES]', text_dict['locations_1'])
 		template = template.replace('[INSERT LOCATION 2 ENTRIES]', text_dict['locations_2'])
 		template = template.replace('[INSERT LOCATION 3 ENTRIES]', text_dict['locations_3'])
+		template = template.replace('[INSERT LOCATION 4 ENTRIES]', text_dict['locations_4'])
 		template = template.replace('[INSERT EXPERTISE 1 ENTRIES]', text_dict['expertises_1'])
 		template = template.replace('[INSERT EXPERTISE 2 ENTRIES]', text_dict['expertises_2'])
 		template = template.replace('[INSERT INDUSTRY 1 ENTRIES]', text_dict['industries_1'])
@@ -601,7 +602,7 @@ def generate_sum_pdf(curr_directory, prev_directory, sum_dict, diff_sum_dict):
 		#double col tables
 		else:
 			if category == "locations":
-				num = 3
+				num = 4
 			else:
 				num = 2
 			dicts = split_dict(sub_dict, num)
@@ -636,6 +637,7 @@ def generate_sum_pdf(curr_directory, prev_directory, sum_dict, diff_sum_dict):
 	template = template.replace('[INSERT LOCATION 1 ENTRIES]', text_dict['locations_1'])
 	template = template.replace('[INSERT LOCATION 2 ENTRIES]', text_dict['locations_2'])
 	template = template.replace('[INSERT LOCATION 3 ENTRIES]', text_dict['locations_3'])
+	template = template.replace('[INSERT LOCATION 4 ENTRIES]', text_dict['locations_4'])
 	template = template.replace('[INSERT EXPERTISE 1 ENTRIES]', text_dict['expertises_1'])
 	template = template.replace('[INSERT EXPERTISE 2 ENTRIES]', text_dict['expertises_2'])
 	template = template.replace('[INSERT INDUSTRY 1 ENTRIES]', text_dict['industries_1'])

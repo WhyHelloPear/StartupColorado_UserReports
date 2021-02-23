@@ -181,19 +181,24 @@
 					<div class="card no_space">
 						<div class="card-header">Listed Locations</div>
 						<div class="card-body table-responsive">
-							<div class="col-4" style="float:left; padding-left: 10px;">
+							<div class="col-3" style="float:left; padding-left: 10px;">
 								<table id="member_type" class="entry_table">
 									[INSERT LOCATION 1 ENTRIES]
 								</table>
 							</div>
-							<div class="col-4" style="float:left; padding-right: 10px; border-right: 1px solid #000; border-left: 1px solid #000;">
+							<div class="col-3" style="float:left; padding-right: 10px; border-right: 1px solid #000; border-left: 1px solid #000;">
 								<table id="member_type" class="entry_table">
 									[INSERT LOCATION 2 ENTRIES]
 								</table>
 							</div>
-							<div class="col-4" style="float:left; padding-left: 10px;">
+							<div class="col-3" style="float:left; padding-left: 10px; border-right: 1px solid #000;">
 								<table id="member_type" class="entry_table">
 									[INSERT LOCATION 3 ENTRIES]
+								</table>
+							</div>
+							<div class="col-3" style="float:left; padding-left: 10px;">
+								<table id="member_type" class="entry_table">
+									[INSERT LOCATION 4 ENTRIES]
 								</table>
 							</div>
 						</div>
