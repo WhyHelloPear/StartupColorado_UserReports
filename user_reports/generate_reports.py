@@ -1,7 +1,6 @@
 import os
 import csv
 import math
-import shutil
 import pdfkit
 import pandas as pd
 from os import listdir
