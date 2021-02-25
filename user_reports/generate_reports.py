@@ -12,10 +12,13 @@ from os.path import isfile, join
 # CLASSES 
 #======================================
 class Directory:
+	# Directory is the main access point to all objects generated from User Exports
+	# Including User and Group objects that are used later to genereate the reports
+
 	def __init__(self):
-		self.users = []
-		self.groups = []
-		self.group_names = {}
+		self.users = [] #holds user objects
+		self.groups = [] #holds group objects
+		self.group_names = {} #holds names of groups
 		self.categories = {}
 		self.categories['groups'] = []
 		self.categories['expertise'] = []
@@ -24,19 +27,22 @@ class Directory:
 		self.categories['resources'] = []
 		self.categories['stages'] = []
 		self.categories['member_types'] = []
-		self.current_date = ''
+		self.current_date = '' #holds date of directory
 
 
 class User:
+	# User objects are created for each user in the export file
+	# Holds selected information about a single user that is used in later reports
+
 	def __init__(self, uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources, location, stages, active, member_types):
-		self.uid = uid #[STRING]   user id
-		self.first_name = first_name #tracks name of play
+		self.uid = uid #[STRING] user id
+		self.first_name = first_name
 		self.last_name = last_name
 		self.email = email
 		self.last_active = last_active #date profile was last active
 		self.created = created #date profile was created
-		self.count = int(count) # [INT]   number of times signed in
-		self.score = int(score) # [INT]
+		self.count = int(count) # [INT] number of times signed in
+		self.score = int(score) # [INT] user activity score
 		self.categories = {}
 		self.categories['groups'] = groups
 		self.categories['expertise'] = expertise
@@ -45,21 +51,26 @@ class User:
 		self.categories['resources'] = resources
 		self.categories['stages'] = stages
 		self.categories['member_types'] = member_types
-		self.location = location
-		self.active = active
+		self.location = location #live location used in reports
+		self.active = active #tracks whether user has activated their account or not
 		
 
 class Group:
+	# Object used for single group in the platform
+	# Tracks name, group id, and users in each group
+
 	def __init__(self, gid, name):
-		self.gid = gid
-		self.name = name
-		self.members = []
+		self.gid = gid #group id
+		self.name = name 
+		self.users = [] #holds user objects for users in each group
 
 
 #======================================
 # HELPER FUNCTIONS
 #======================================
 def get_max_string_len(data):
+	# Simply returns the max length of a string in a list of strings
+
 	value = 0
 	for item in data:
 		if len(item) > value:
@@ -68,15 +79,20 @@ def get_max_string_len(data):
 
 
 def get_group(directory, gid):
+	# returns a group objects from specified gid from directory
+
 	value = None
-	for group in directory.groups:
-		if group.gid == gid:
-			value = group
-			break
+	if directory != None:
+		for group in directory.groups:
+			if group.gid == gid: #if group object is found
+				value = group
+				break #break loop and return group object
 	return value
 
 
 def get_index(categories, category):
+	#returns the index of a category in the excel file
+
 	index = ""
 	if category in categories:
 		index = categories.index(category)
@@ -85,21 +101,25 @@ def get_index(categories, category):
 
 
 def add_group_member(directory, user, gid):
+	#adds user object to a group object's member list
+
 	gid = int(gid)
-	group = get_group(directory, gid)
-	if group == None:
-		group = Group(gid, directory.group_names[gid])
-		directory.groups.append(group)
-	group.members.append(user)
+	group = get_group(directory, gid) #gets group object from group id
+	if group == None: #if group has not been created yet...
+		group = Group(gid, directory.group_names[gid]) #create the group
+		directory.groups.append(group) #add group to the directory
+	group.users.append(user) #add user to the group
 
 
 def fix_list(data):
-	result = []
+	#formats a list correctly to remove unnecessary characters and spaces
 
-	for item in data:
+	result = [] #resulting list
+
+	for item in data:#iterate over every item in original list
 		if type(item) == str:
 			if len(item) > 0:
-				if item[0] == ' ':
+				if item[0] == ' ': #removes unecessary space at start of string
 					item = item[1:]
 		if item != '':
 			result.append(item)
@@ -108,47 +128,47 @@ def fix_list(data):
 
 
 def format_date(date):
+	#formats a date correctly in form of mm/dd/yyyy
+
 	date = date.split('-')
 	date = date[1]+'/'+date[2]+'/'+date[0]
 	return date
 
 
 def split_dict(full_dict, num):
+	#splits a dictionary into several dictionaries based on given size, 'num'
+	#a single directory may be split into 2, 3, or 4 dictionaries for example
 
-	dicts = []
-	keys = list(full_dict.keys())
-	items = list(full_dict.values())
-	# print(len(keys))
+	dicts = [] #list of final dictionaries
+	keys = list(full_dict.keys()) #gets all keys of original dictionary into a list
+	items = list(full_dict.values()) #gets all values of original dictionary into a list
+	full = len(keys) #length of original dictionary
+	status = 0 #tracks how many keys/values have been handled already, initially 0
 
-	full = len(keys)
-
-	status = 0
-
-	for i in range(num):
-		sub_dict = {}
-
-		length = 0
-		if i == num-1:
-			if num == 3:
+	for i in range(num): #loops for number of desired dictionaries
+		sub_dict = {} #sub-dictionary for a single loop
+		length = 0 #tracks length of current sub-dictionary
+		if i == num-1: #if current dictionary is the last sub-dictionary
+			if num == 3: #formats length of final sub-dict
 				length = full - (math.ceil(full/3) * 2)
 			else:
 				length = full - math.ceil(full/2)
 		else:
 			length = math.ceil(full/num)
 
-		for j in range(status,length+status):
-			if j >= full:
+		for j in range(status,length+status): #fill sub-dictionary with un-used keys/values
+			if j >= full: #ensures index is not out of range
 				break
-			# print(j)
-			sub_dict[keys[j]] = items[j]
+			sub_dict[keys[j]] = items[j] #add item to sub-dict
 
-		status += length
-		dicts.append(sub_dict)
+		status += length #update number of keys/values handled for next iteration
+		dicts.append(sub_dict) #add sub-dict to final list of dictionaries
 		
 	return dicts
 
 
 def most_recent_date(d1, d2):
+	#returns the most recent date of two given dates
 
 	d1 = d1.split("-")
 	d2 = d2.split("-")
@@ -188,24 +208,26 @@ def most_recent_date(d1, d2):
 # PRIMARY FUNCTIONS
 #======================================
 def get_dates(path):
+	#gets all dates from all saved user export files and sorts dates from newest to oldest
 
 	value = ""
 
-	files = [f for f in listdir(path) if isfile(join(path, f))]
+	files = [f for f in listdir(path) if isfile(join(path, f))] #gets names of all files in export directory
 	dates = []
 
 	for file in files:
-		if "User_export_" in file:
-			date = file.replace("~$","")
-			date = date.replace("User_export_","")
-			date = date.replace(".xlsx","")
-			if date not in dates:
+		if "User_export_" in file: #if file is a user export
+			date = file.replace("~$","") #format
+			date = date.replace("User_export_","") #format
+			date = date.replace(".xlsx","") #format
+			if date not in dates: #check date is not already stored in final list
 				dates.append(date)
 
-	done = False
+	done = False #ensures loop repeats until all dates are correctly sorted from most recent to oldest
 
+	#bubble sort
 	while not done:
-		previous = dates.copy()
+		previous = dates.copy() #used to check if list has not changed from start of loop to the end
 
 		for i in range(len(dates)):
 			if i == len(dates) - 1:
@@ -215,49 +237,54 @@ def get_dates(path):
 			dates[i] = new
 			dates[i+1] = old
 
-		if dates == previous:
-			done = True
+		if dates == previous: #if list is the same from the start of the loop...
+			done = True #list is correctly sorted and loop can end
 
 	return dates
 
 
 def read_group_names(path):
-	names = {}
-	file_name = path + "names.csv"
-	with open(file_name) as file:
-		data = csv.reader(file, delimiter=",")
-		for row in data:
-			gid = int(row[0])
-			name = row[1]
+	#reads saved group names and id's from file into our directory for later use
 
-			names[gid] = name
+	names = {} #matches group id's to group names
+	file_name = path + "names.csv" #file directory from specified path
+	with open(file_name) as file:
+		data = csv.reader(file, delimiter=",") 
+		for row in data: #go over every saved group name
+			gid = int(row[0]) #get group id
+			name = row[1] #get group name
+			names[gid] = name #save data to dictionary
 
 	return names
 
 
 def fill_directory(directory, category, data):
-	filtered_data = []
-	for item in data:
-		if item == 'Outoor Recreation':
+	#fills specified directory dictionary with given data
+
+	filtered_data = [] #ensures returned data are not duplicates 
+	for item in data: 
+		if item == 'Outoor Recreation': #corrects spelling
 			item = 'Outdoor Recreation'
-		if item not in directory.categories[category]:
+		if item not in directory.categories[category]: #adds new item to directory dictionary
 			directory.categories[category].append(item)
-		if item not in filtered_data:
+		if item not in filtered_data: #adds new item to returned list
 			filtered_data.append(item)
-	return filtered_data
+	return filtered_data #returns non-duplicated data
 
 
 def read_users(path, directory):
-	users = []
+	#item creates user objects and adds created user objects to given directory object
 
-	df = pd.read_excel(path)
-	df = df.fillna("")
+	users = [] #holds user objects
 
-	categories = list(df.columns)
+	df = pd.read_excel(path) #get data from user export
+	df = df.fillna("") #fills empty entries with empty strings
 
-	data = df.to_numpy()
+	categories = list(df.columns) #gets all categories from file
 
-	fields = [
+	data = df.to_numpy() #converts dataframe to an array
+
+	fields = [ #list of all desired fields/data to be saved in user object
 		"ID",
 		"First name",
 		"Last name",
@@ -277,7 +304,7 @@ def read_users(path, directory):
 		"Live Location:City"
 	]
 
-	lists = [
+	lists = [ #these fields/data are lists of data
 		"Groups Member:Group Member",
 		"_281d4ac7_Expertise",
 		"_07417723_Industry_1",
@@ -290,7 +317,7 @@ def read_users(path, directory):
 	for row in data:
 		info = []
 
-		user_data = {
+		user_data = { #dictionary of user object data with default values
 			"uid": "",
 			"first_name": "",
 			"last_name": "",
@@ -310,55 +337,57 @@ def read_users(path, directory):
 			"city": "",
 		}
 
+		#list used to access directory sub-dictionaries
 		list_categories = ["groups","expertise","industry","interests","resources","stages","member_types"]
 
 		keys = list(user_data.keys())
 		for i in range(len(fields)):
-			field = fields[i]
-			index = get_index(categories, field)
-			entry = user_data[keys[i]]
+			field = fields[i] 
+			index = get_index(categories, field) #gets index of desired data field from export data
+			entry = user_data[keys[i]] #default value of user data based on previous declared dictionary value
 
-			if index != "":
+			if index != "": #if desired category exists in user export file
 
-				if row[index] != "":
+				if row[index] != "": #if entry of desired category is not empty
 
-					if (field == "Last sign in date") or (field == "Created at"):
+					if (field == "Last sign in date") or (field == "Created at"): #ensures data format
 						entry = row[index].split(' ')[0]
 
-					elif field in lists:
+					elif field in lists: #ensures list data is formatted properly
 						fixed_list = fix_list(row[index].split(","))
 						if (field == "SubNetworks:Title") and ("Undefined" in fixed_list):
 							fixed_list.remove("Undefined")
 						entry = fill_directory(directory, list_categories.pop(0), fixed_list)
 
-					else:
+					else: #data needs no formatting and can be saved directly
 						entry = row[index]
 
-			user_data[keys[i]] = entry
+			user_data[keys[i]] = entry #saves entry data to user data dictionary
 
 		active = False
-		if int(user_data["count"]) > 0:
-			active = True
+		if int(user_data["count"]) > 0: #if user has signed in at least once...
+			active = True #they are considered an active user
+		user_data["active"] = active
 
 
-		location = "NO RECORDED LOCATION"
 
+		#Code below correctly formats a user's location
+		location = "NO RECORDED LOCATION" #defualt location
 		city = user_data["city"]
 		full_address = user_data["full_address"]
-		if len(city) != 0:
-			location = city
-		else:
+		if len(city) != 0: 
+			location = city #user's preferred location is their city
+		else: #if city is not stored, location is based off their full address
 			if len(full_address) != 0:
 				split = full_address.split(",")
 				if len(split) > 3:
 					location = split[1]
 				else:
 					location = split[0]
-
-		user_data["active"] = active
 		user_data["location"] = location
 
-		user = User(
+
+		user = User( #creates user object based off saved user data
 			user_data["uid"],
 			user_data["first_name"],
 			user_data["last_name"],
@@ -377,16 +406,19 @@ def read_users(path, directory):
 			user_data["active"],
 			user_data["member_types"]
 		)
-		users.append(user)
+		users.append(user) #adds user object to list
 
-		for gid in user_data["groups"]:
+		for gid in user_data["groups"]: #if user is in group, add user to saved group
 			add_group_member(directory, user, gid)
 
-	return users
+	return users #return list of created user objects
 
 
-def generate_pdf(name, path):
-	options = {
+def generate_pdf(html, gid, name, path):
+	#Generates a pdf in specefied path based off of created HTML string
+	#NOTE: html string is saved to file in order to properly include images in the pdf reports
+
+	options = { #formatting options of PDF
 		'page-size': 'A4',
 		'margin-top': '0in',
 		'margin-right': '0in',
@@ -395,191 +427,80 @@ def generate_pdf(name, path):
 		'quiet': '',
 		}
 
-	group = ''.join([i for i in name if not i.isdigit()])
-	if group[0] == '_':
-		group = group[1:]
-	group = group.replace("_",' ')
-
-	print("Generating " + group + " report...")
-	output = path + name + ".pdf"
-	pdfkit.from_file('./html_report.html', output, options) 
 
 
-def generate_group_pdf(curr_directory, prev_directory, group_dicts, diff_group_dict):
+	file = open("./data/html_report.html","w") #creates html files
+	file.write(html) #writes html content from string to files
+	file.close() #closes file
 
-	original_template = ""
+	print("Generating " + name + " report...") #state pdf is being created
 
-	with open('./data/html_template_group.csv', newline='') as csvfile:
-		file = csv.reader(csvfile)
-		for row in file:
-			for item in row:
-				original_template += item
+	if gid != None: #check if file is group report or sum report
+		name = name.replace(' ', '_') #format name
+		name = str(gid) + '_' + name #format name
+
+	output = path + name + ".pdf" #output name for file
+
+	pdfkit.from_file("./data/html_report.html", output, options) #create pdf from html
+
+	os.remove("./data/html_report.html") #remove html file
 
 
-	for group in curr_directory.groups:
+def generate_html(curr_directory, prev_directory, orig_dict, diff_dict, html_type):
+	#Generates a string with html code that is used for the reports
+	#html_type specifies if html is for group or sum report
 
-		template = original_template
-		gid = group.gid
-		name = group.name
+	name = "" #title for page
+	size = None #number of users
+	size_diff = None #difference of users from last report
+	curr_group = None
+	prev_group = None
 
-		date = curr_directory.current_date
-		
-		prev_group = get_group(prev_directory, gid)
-		if prev_group != None:
+	banner = "./group_data/banner.jpg"
+	logo = "./group_data/logo.jpg"
+
+	html_name = "" #html template file to be loaded
+
+	date = curr_directory.current_date #date of report
+
+	if html_type == "sum": #if report is a user sum report
+		name = "User Sum Report" #change title
+		html_name = './data/html_template_sum.csv' #dictate sum template will be used
+
+		size = str(len(curr_directory.users)) #number of active users in entire directory
+		if prev_directory != None: #check if previous user export file exists
+			size_diff = len(curr_directory.users) - len(prev_directory.users) #get difference in size
+			date += '<br>Previous Report Date: ' + prev_directory.current_date #write last report date in html
+
+	else: #if report is a group report
+		html_name = './data/html_template_group.csv' #load group template
+		curr_group = get_group(curr_directory, html_type) #get current group from group id
+		prev_group = get_group(prev_directory, html_type) #get group from last report if it exists
+
+		name = curr_group.name #title changes to group name
+		size = str(len(curr_group.users)) #number of users in group
+		if prev_group != None: #if group existed in last user export
 			date += '<br>Previous Report Date: ' + prev_directory.current_date
+			size_diff = len(curr_group.users) - len(prev_group.users)
 
-		size_diff = None
-		if prev_directory != None:
-			if prev_group != None:
-				size_diff = len(group.members) - len(prev_group.members)
-
-		size = str(len(group.members))
-		if size_diff != None:
-			if size_diff > 0:
-				size += '   (+'+str(size_diff)+')'
-			elif size_diff < 0:
-				size += '   ('+str(size_diff)+')'
-
-
-		path = "./data/group_data/cover_photos/"
-		files = [f for f in listdir(path) if isfile(join(path, f))]
-		background_name = "default.jpg"
-		# for file in files:
-		# 	if str(gid) in file:
-		# 		background_name = file
-		background = path + background_name
-
-		path = "./data/group_data/logos/"
-		files = [f for f in listdir(path) if isfile(join(path, f))]
-		logo_name = "default.jpg"
-		# for file in files:
-		# 	if str(gid) in file:
-		# 		logo_name = file
-		logo = path + logo_name
-		
-		categories = ['locations','industries','expertises','interests','stages','member_types']
-		group_dict = group_dicts[gid]
-		text_dict = {}
-
-		for category in categories:
-			sub_dict = group_dict[category]
-
-			#single col tables
-			if (category == "stages") or (category == "member_types"):
-				text = ''
-				for item in sub_dict:
-					text += '<tr><td>'+item+'</td>'
-					text += '<td class="count">'+str(sub_dict[item])
-
-					if diff_group_dict != None:
-						diff = diff_group_dict[gid][category][item]
-						if diff < 0:
-							text += ' ('+str(diff)+')'
-						elif diff > 0:
-							text += ' (+'+str(diff)+')'
-
-					text += '</td></tr>'
-
-				text_dict[category] = text
-
-			#double col tables
-			else:
-				if category == "locations":
-					num = 4
-				else:
-					num = 2
-				dicts = split_dict(sub_dict, num)
-				for i in range(len(dicts)):
-					text = ''
-					new_sub_dict = dicts[i]
-					for item in new_sub_dict:
-						text += '<tr><td>'+item+'</td>'
-						text += '<td class="count">'+str(new_sub_dict[item])
-
-						if diff_group_dict != None:
-							diff = diff_group_dict[gid][category][item]
-							if diff < 0:
-								text += ' ('+str(diff)+')'
-							elif diff > 0:
-								text += ' (+'+str(diff)+')'
-
-						text += '</td></tr>'
-
-					cat = category+"_"+str(i+1)
-
-					text_dict[cat] = text
-
-
-		template = template.replace('[INSERT GROUP BACKGROUND]', background)
-		template = template.replace('[INSERT GROUP LOGO]', logo)
-		template = template.replace('[INSERT GROUP TITLE]', name)
-		template = template.replace('[INSERT STAGE ENTRIES]', text_dict['stages'])
-		template = template.replace('[INSERT MEMBER TYPE ENTRIES]', text_dict['member_types'])
-		template = template.replace('[INSERT INTEREST 1 ENTRIES]', text_dict['interests_1'])
-		template = template.replace('[INSERT INTEREST 2 ENTRIES]', text_dict['interests_2'])
-		template = template.replace('[INSERT LOCATION 1 ENTRIES]', text_dict['locations_1'])
-		template = template.replace('[INSERT LOCATION 2 ENTRIES]', text_dict['locations_2'])
-		template = template.replace('[INSERT LOCATION 3 ENTRIES]', text_dict['locations_3'])
-		template = template.replace('[INSERT LOCATION 4 ENTRIES]', text_dict['locations_4'])
-		template = template.replace('[INSERT EXPERTISE 1 ENTRIES]', text_dict['expertises_1'])
-		template = template.replace('[INSERT EXPERTISE 2 ENTRIES]', text_dict['expertises_2'])
-		template = template.replace('[INSERT INDUSTRY 1 ENTRIES]', text_dict['industries_1'])
-		template = template.replace('[INSERT INDUSTRY 2 ENTRIES]', text_dict['industries_2'])
-		template = template.replace('[INSERT NUM USERS]', size)
-		template = template.replace('[INSERT DATE]', date)
-
-
-		html = open("./html_report.html","w")
-		html.write(template)
-		html.close()
-
-		file_name = name.replace(' ','_')
-		file_name = str(gid) + '_' + file_name
-
-		path = './reports/group_reports/'
-		generate_pdf(file_name, path)
-
-		if os.path.exists("./html_report.html"):
-			os.remove("./html_report.html")
-
-
-def generate_sum_pdf(curr_directory, prev_directory, sum_dict, diff_sum_dict):
-
-	template = ""
-
-	with open('./data/html_template_sum.csv', newline='') as csvfile:
+	template = "" #string used to hold all html code
+	with open(html_name, newline='') as csvfile: #writes code from template into string
 		file = csv.reader(csvfile)
 		for row in file:
 			for item in row:
 				template += item
 
-
-	name = "User Sum Report"
-	background = "./data/group_data/cover_photos/default.jpg"
-	logo = "./data/group_data/logos/default.jpg"
-
-
-	date = curr_directory.current_date
-	if prev_directory != None:
-		date += '<br>Previous Report Date: ' + prev_directory.current_date
-
-	size_diff = None
-	if prev_directory != None:
-		size_diff = len(curr_directory.users) - len(prev_directory.users)
-
-	size = str(len(curr_directory.users))
-	if size_diff != None:
-		if size_diff > 0:
-			size += '   (+'+str(size_diff)+')'
-		elif size_diff < 0:
-			size += '   ('+str(size_diff)+')'
-
+	if size_diff != None: #writes change in number of users on report
+			if size_diff > 0:
+				size += '   (+'+str(size_diff)+')'
+			elif size_diff < 0:
+				size += '   ('+str(size_diff)+')'
 	
-	categories = ['locations','industries','expertises','interests','stages','member_types']
-	text_dict = {}
+	categories = ['locations','industries','expertises','interests','stages','member_types'] #category tables in report
+	text_dict = {} #holds text for each table
 
-	for category in categories:
-		sub_dict = sum_dict[category]
+	for category in categories: #iterate over all categories
+		sub_dict = orig_dict[category] #
 
 		#single col tables
 		if (category == "stages") or (category == "member_types"):
@@ -588,8 +509,8 @@ def generate_sum_pdf(curr_directory, prev_directory, sum_dict, diff_sum_dict):
 				text += '<tr><td>'+item+'</td>'
 				text += '<td class="count">'+str(sub_dict[item])
 
-				if diff_sum_dict != None:
-					diff = diff_sum_dict[category][item]
+				if diff_dict != None:
+					diff = diff_dict[category][item]
 					if diff < 0:
 						text += ' ('+str(diff)+')'
 					elif diff > 0:
@@ -599,7 +520,7 @@ def generate_sum_pdf(curr_directory, prev_directory, sum_dict, diff_sum_dict):
 
 			text_dict[category] = text
 
-		#double col tables
+		#double (or more) col tables
 		else:
 			if category == "locations":
 				num = 4
@@ -613,8 +534,8 @@ def generate_sum_pdf(curr_directory, prev_directory, sum_dict, diff_sum_dict):
 					text += '<tr><td>'+item+'</td>'
 					text += '<td class="count">'+str(new_sub_dict[item])
 
-					if diff_sum_dict != None:
-						diff = diff_sum_dict[category][item]
+					if diff_dict != None:
+						diff = diff_dict[category][item]
 						if diff < 0:
 							text += ' ('+str(diff)+')'
 						elif diff > 0:
@@ -626,10 +547,10 @@ def generate_sum_pdf(curr_directory, prev_directory, sum_dict, diff_sum_dict):
 
 				text_dict[cat] = text
 
-
-	template = template.replace('[INSERT GROUP BACKGROUND]', background)
-	template = template.replace('[INSERT GROUP LOGO]', logo)
-	template = template.replace('[INSERT GROUP TITLE]', name)
+	#place all generated text into html string
+	template = template.replace('[INSERT BANNER]', banner)
+	template = template.replace('[INSERT LOGO]', logo)
+	template = template.replace('[INSERT TITLE]', name)
 	template = template.replace('[INSERT STAGE ENTRIES]', text_dict['stages'])
 	template = template.replace('[INSERT MEMBER TYPE ENTRIES]', text_dict['member_types'])
 	template = template.replace('[INSERT INTEREST 1 ENTRIES]', text_dict['interests_1'])
@@ -645,57 +566,63 @@ def generate_sum_pdf(curr_directory, prev_directory, sum_dict, diff_sum_dict):
 	template = template.replace('[INSERT NUM USERS]', size)
 	template = template.replace('[INSERT DATE]', date)
 
+	return template #return filled html string
 
 
-	html = open("./html_report.html","w")
-	html.write(template)
-	html.close()
+def generate_reports(curr_directory, prev_directory, sum_dict, diff_sum_dict, group_dicts, diff_group_dict):
+	#parent function that generates sum and group reports
+	
+	html = generate_html(curr_directory, prev_directory, sum_dict, diff_sum_dict, "sum") #get html string for sum report
 
-	file_name = name.replace(' ','_')
+	file_name = "Sum_User_Report" #name for sum report
 	path = './reports/'
-	generate_pdf(file_name, path)
+	generate_pdf(html, None, file_name, path) #generate pdf from sum html string
 
-	if os.path.exists("./html_report.html"):
-		os.remove("./html_report.html")
+	for group in curr_directory.groups: #repeat above process for all groups
+		gid = group.gid
+		group_dict = group_dicts[gid]
+		diff_dict = diff_group_dict[gid]
+
+		html = generate_html(curr_directory,prev_directory, group_dict, diff_dict, gid) #generate html string for single group
+
+		file_name = group.name
+		path = './reports/Group_Reports/'
+
+		generate_pdf(html, gid, file_name, path) #generate pdf from html string for group
 
 
 def fetch_directories():
+	#Function used to create directories with stored user and group objects
+
 	export_dir_name = "./data/user_exports/"
-	dates = get_dates(export_dir_name)
+	dates = get_dates(export_dir_name) #gets sorted dates for exports saved
 
-	curr_date = dates[0]
-	prev_date = None
-	if len(dates) > 1:
-		prev_date = dates[1]
-
-	curr_date = format_date(curr_date)
+	curr_date = format_date(dates[0]) #saves and formatts most current date
+	prev_date = None #default value of next current date
+	if len(dates) > 1: #if there are multiple exports saved...
+		prev_date = format_date(dates[1]) #gets and formats next recent date
 
 	export_name = "User_export_" + dates[0] + ".xlsx"
 	export_path = export_dir_name + export_name
-	group_dir_name = "./data/group_data/"
 
+	curr_directory = Directory() #create directory object
+	curr_directory.current_date = curr_date #save date of directory
+	curr_directory.group_names = read_group_names("./data/group_data/") #get group names for directory
+	curr_directory.users = read_users(export_path, curr_directory) #get users for directory
+	curr_directory.users.sort(key=lambda user:user.score, reverse=True) #sort users based off activity score
 
+	prev_directory = None #default value of directory
 
-	curr_directory = Directory()
-	curr_directory.current_date = curr_date
-	curr_directory.group_names = read_group_names(group_dir_name)
-	curr_directory.users = read_users(export_path, curr_directory)
-	curr_directory.users.sort(key=lambda user:user.score, reverse=True)
-
-
-	prev_directory = None
-
-	if prev_date != None:
-		prev_date = format_date(prev_date)
+	if prev_date != None: #prev directory only created if another date exists (more than one export exists)
 		export_name = "User_export_" + dates[1] + ".xlsx"
 		export_path = export_dir_name + export_name
 
+		#same process as curr_directory, but for previous date/export
 		prev_directory = Directory()
 		prev_directory.current_date = prev_date
-		prev_directory.group_names = read_group_names(group_dir_name)
+		prev_directory.group_names = read_group_names("./data/group_data/")
 		prev_directory.users = read_users(export_path, prev_directory)
 		prev_directory.users.sort(key=lambda user:user.score, reverse=True)
-
 
 	return curr_directory, prev_directory
 
@@ -703,140 +630,12 @@ def fetch_directories():
 #======================================
 # DICTIONARY HANDLER FUNCTIONS
 #======================================
-def create_diff_group_dict(curr_group_directory, prev_group_directory):
+def create_dict(data):
+	#creates dictionary of users in data object (either directory or group object)
 
-	diff_group_dict = {}
+	data_dict = {} #parent dict
 
-	for gid in curr_group_directory.keys():
-		diff_group_dict[gid] = {}
-		for category in curr_group_directory[gid].keys():
-			category_dict = {}
-			for item in curr_group_directory[gid][category].keys():
-				diff = 0
-				if gid in prev_group_directory:
-					if item in prev_group_directory[gid][category]:
-						diff = curr_group_directory[gid][category][item] - prev_group_directory[gid][category][item]
-					else:
-						diff = curr_group_directory[gid][category][item]
-
-				category_dict[item] = diff
-			diff_group_dict[gid][category] = category_dict
-
-	return diff_group_dict
-		
-
-def create_diff_sum_dict(curr_sum_directory, prev_sum_directory):
-
-	diff_sum_dict = {}
-
-	for category in curr_sum_directory.keys():
-		category_dict = {}
-		for item in curr_sum_directory[category].keys():
-			diff = 0
-			if item in prev_sum_directory[category]:
-				diff = curr_sum_directory[category][item] - prev_sum_directory[category][item]
-			else:
-				diff = curr_sum_directory[category][item]
-
-			category_dict[item] = diff
-		diff_sum_dict[category] = category_dict
-
-	return diff_sum_dict
-
-
-#Creates and returns a dictionary that holds all groups and the selected demographics of each group
-def create_group_dicts(directory):
-	
-	#create pie chart of composition of each group and the specified areas of interest (locations, industries, etc)
-	
-	
-	#NOTE: Stages (the stage a user is in within their career) is NOT an accurate report. 
-	#Not all users, only a select few in fact, have filled this information out.
-	#In act, a single user may make up for 4 or 5 different reported stages; keep this in mind
-	
-	group_dict = {}
-	for group in directory.groups:
-		
-		group_dict[group.gid] = {}
-		locations = {}
-		industries = {}
-		expertises = {}
-		interests = {}
-		resources = {}
-		stages = {}
-		member_types = {}
-
-		for user in group.members:
-
-			if user.active:
-			
-				location = user.location.split(",")[0]
-				if location not in locations:
-					locations[location] = 1
-				else:
-					locations[location] += 1
-					
-				for industry in user.categories['industry']:
-					if industry not in industries:
-						industries[industry] = 1
-					else:
-						industries[industry] += 1
-				
-				for expertise in user.categories['expertise']:
-					if expertise not in expertises:
-						expertises[expertise] = 1
-					else:
-						expertises[expertise] += 1
-
-				for interest in user.categories['interests']:
-					if interest not in interests:
-						interests[interest] = 1
-					else:
-						interests[interest] += 1
-				
-				for resource in user.categories['resources']:
-					if resource not in resources:
-						resources[resource] = 1
-					else:
-						resources[resource] += 1
-				
-				for stage in user.categories['stages']:
-					if stage not in stages:
-						stages[stage] = 1
-					else:
-						stages[stage] += 1 
-
-				for member_type in user.categories['member_types']:
-					if member_type not in member_types:
-						member_types[member_type] = 1
-					else:
-						member_types[member_type] += 1 
-					
-		group_dict[group.gid]["locations"] = dict(sorted(locations.items(), key=lambda item:item[1], reverse=True))
-		group_dict[group.gid]["industries"] = dict(sorted(industries.items(), key=lambda item:item[1], reverse=True))
-		group_dict[group.gid]["expertises"] = dict(sorted(expertises.items(), key=lambda item:item[1], reverse=True))
-		group_dict[group.gid]["interests"] = dict(sorted(interests.items(), key=lambda item:item[1], reverse=True))
-		group_dict[group.gid]["resources"] = dict(sorted(resources.items(), key=lambda item:item[1], reverse=True))
-		group_dict[group.gid]["stages"] = dict(sorted(stages.items(), key=lambda item:item[1], reverse=True))
-		group_dict[group.gid]["member_types"] = dict(sorted(member_types.items(), key=lambda item:item[1], reverse=True))
-
-	return group_dict
-
-
-#Creates and returns a dictionary that holds all groups and the selected demographics of each group
-def create_sum_dict(directory):
-	
-	#create pie chart of composition of each group and the specified areas of interest (locations, industries, etc)
-	
-	
-	#NOTE: Stages (the stage a user is in within their career) is NOT an accurate report. 
-	#Not all users, only a select few in fact, have filled this information out.
-	#In act, a single user may make up for 4 or 5 different reported stages; keep this in mind
-	
-
-	sum_dict = {}
-
-	locations = {}
+	locations = {} #sub dict for lacations
 	industries = {}
 	expertises = {}
 	interests = {}
@@ -844,11 +643,11 @@ def create_sum_dict(directory):
 	stages = {}
 	member_types = {}
 
-	for user in directory.users:
+	for user in data.users: #iterate over every user
 
-		if user.active:
+		if user.active: #only record stats for active users
 		
-			location = user.location.split(",")[0]
+			location = user.location.split(",")[0] 
 			if location not in locations:
 				locations[location] = 1
 			else:
@@ -890,37 +689,74 @@ def create_sum_dict(directory):
 				else:
 					member_types[member_type] += 1 
 				
-	sum_dict["locations"] = dict(sorted(locations.items(), key=lambda item:item[1], reverse=True))
-	sum_dict["industries"] = dict(sorted(industries.items(), key=lambda item:item[1], reverse=True))
-	sum_dict["expertises"] = dict(sorted(expertises.items(), key=lambda item:item[1], reverse=True))
-	sum_dict["interests"] = dict(sorted(interests.items(), key=lambda item:item[1], reverse=True))
-	sum_dict["resources"] = dict(sorted(resources.items(), key=lambda item:item[1], reverse=True))
-	sum_dict["stages"] = dict(sorted(stages.items(), key=lambda item:item[1], reverse=True))
-	sum_dict["member_types"] = dict(sorted(member_types.items(), key=lambda item:item[1], reverse=True))
+	#sort and store all sub-dictionaries into parent dictionary that will be returned
+	data_dict["locations"] = dict(sorted(locations.items(), key=lambda item:item[1], reverse=True))
+	data_dict["industries"] = dict(sorted(industries.items(), key=lambda item:item[1], reverse=True))
+	data_dict["expertises"] = dict(sorted(expertises.items(), key=lambda item:item[1], reverse=True))
+	data_dict["interests"] = dict(sorted(interests.items(), key=lambda item:item[1], reverse=True))
+	data_dict["resources"] = dict(sorted(resources.items(), key=lambda item:item[1], reverse=True))
+	data_dict["stages"] = dict(sorted(stages.items(), key=lambda item:item[1], reverse=True))
+	data_dict["member_types"] = dict(sorted(member_types.items(), key=lambda item:item[1], reverse=True))
 
-
-	return sum_dict
+	return data_dict #return parent dict
 
 
 def fetch_dicts(directory):
+	#function returns both sum and group dictionaries for a given directory
 
-	sum_dict = None
-	group_dict = None
+	sum_dict = None #default value of dict
+	group_dict = None 
 
-	if directory != None:
-		sum_dict = create_sum_dict(directory)
-		group_dict = create_group_dicts(directory)
+	if directory != None: #if a directory exists and has been initialized
+		sum_dict = create_dict(directory) #create sum dictionary
+		group_dict = {}
+		for group in directory.groups: #repeat same process for all groups
+			group_dict[group.gid] = create_dict(group)
 
 	return sum_dict, group_dict
 
 
-def fetch_diff_dicts(curr_group_dict, curr_sum_dict, prev_group_dict, prev_sum_dict):
-	diff_sum_dict = None
+def create_diff_dict(curr_dict, prev_dict):
+	#creates a dictionary that highlights differences in current directory and previous directory from user export
+	#used in pdf reports to show how userbase has changed
+
+	diff_dict = {}
+
+	for category in curr_dict.keys(): #iterate over all keys
+		category_dict = {}
+		for item in curr_dict[category].keys(): #iterate over all values in dict
+			diff = 0 #default value of difference
+			if item in prev_dict[category]: #check item exists in prev dict and get difference
+				diff = curr_dict[category][item] - prev_dict[category][item] 
+			else: #if item doesn't exist, difference is just the current count in current dictionary
+				diff = curr_dict[category][item]
+
+			category_dict[item] = diff #save result
+		diff_dict[category] = category_dict #save sub dictionary
+
+	return diff_dict #return final difference dict
+
+
+def fetch_diff_dicts(directory, curr_group_dict, curr_sum_dict, prev_group_dict, prev_sum_dict):
+	#returns diff dictionaries of group and sum dictionaries bassed off differences of data
+
+	diff_sum_dict = None #default value
 	diff_group_dict = None
 
-	if prev_sum_dict != None and prev_group_dict != None:
-		diff_group_dict = create_diff_group_dict(curr_group_dict, prev_group_dict)
-		diff_sum_dict = create_diff_sum_dict(curr_sum_dict, prev_sum_dict)
+	if prev_sum_dict != None and prev_group_dict != None: #only create diff dicts if previous dicts exists 
+		
+		diff_sum_dict = create_diff_dict(curr_sum_dict, prev_sum_dict) #create diff dict for sum report
+		diff_group_dict = {} #initialize diff group dict
+
+		for group in directory.groups: #get diff dict for each group
+			gid = group.gid
+
+			curr_dict = curr_group_dict[gid]
+			prev_dict = curr_dict
+			if gid in prev_group_dict: #check if group exists in previous export
+				prev_dict = prev_group_dict[gid]
+
+			diff_group_dict[group.gid] = create_diff_dict(curr_dict, prev_dict) #get diff dict for group
 
 	return diff_sum_dict, diff_group_dict
 
@@ -928,43 +764,91 @@ def fetch_diff_dicts(curr_group_dict, curr_sum_dict, prev_group_dict, prev_sum_d
 #======================================
 # ERROR CHECK FUNCTIONS
 #======================================
-def handle_report_folder():
+def check_reports():
+	#error check function that deletes all previously created pdf reports
+	#tells user to close any pdf report open and returns error if one IS open
+
 	error = False
 
 	try:
-		os.mkdir('./reports')
-		os.mkdir('./reports/Group_Reports')
+		os.mkdir('./reports') #create report folder if it does not exist
+		os.mkdir('./reports/Group_Reports') #create group report folder if it does not exist
 	except OSError as e:
-		pass
+		pass #do not report error if folders already exist
 
-	paths = ['./reports/', './reports/Group_Reports/']
+	paths = ['./reports/', './reports/Group_Reports/'] #paths to delete pdfs from
 
 	for path in paths:
 
-		files = [f for f in listdir(path) if isfile(join(path, f))]	
+		files = [f for f in listdir(path) if isfile(join(path, f))]	#get all files in path
 		for file in files:
 			try:
-				os.remove(path+file)
+				os.remove(path+file) #try to remove pdf file from folder
 			except OSError as e:
-				print(path,file)
-				print ("ERROR: CLOSE ALL OPEN PDF REPORTS!")
-				error = True
-			if error:
+				print ("ERROR: CLOSE ALL OPEN PDF REPORTS!") #report to user that pdf is open and needs to be closed
+				error = True #save that error exists
+			if error: #break loop if error exists
 				break
-		if error:
+		if error:#break loop if error exists
 			break
 
 	return error
 
 
 def check_dates():
-	error = False
-	path = "./data/user_exports/"
-	dates = get_dates(path)
+	#checks that user export files exist
+	#returns an error if NO export files are found
 
-	if len(dates) == 0:
-		print("ERROR: NO USER EXPORTS FOUND IN DATA FOLDER")
+	error = False
+	path = "./data/user_exports/" #path to look for exports
+	dates = get_dates(path) #gets dates of files found
+
+	if len(dates) == 0: #if no files are found
+		print("ERROR: NO USER EXPORTS FOUND IN DATA FOLDER") #report error
 		error = True
+
+	return error
+
+
+def check_groups():
+	#checks that all group names and ids are saved in appropriate file in data folder
+	#if all groups are not saved correctly, reports error
+
+	error = False
+
+	export_dir_name = "./data/user_exports/"
+
+	dates = get_dates(export_dir_name)
+	curr_date = dates[0]
+	curr_date = format_date(curr_date)
+
+	export_name = "User_export_" + dates[0] + ".xlsx"
+	export_path = export_dir_name + export_name
+	group_dir_name = "./data/group_data/"
+
+	df = pd.read_excel(export_path) #get data from user export
+	df = df.fillna("") #fills empty entries with empty strings
+
+	categories = list(df.columns) #gets all categories from file
+	data = df.to_numpy() #converts dataframe to an array
+
+	index = get_index(categories, "Groups Member:Group Member") #gets index of desired data field from export data
+
+	all_groups = []
+	for row in data: #loop gets all groups currently in the user export
+		groups = fix_list(row[index].split(","))
+		for group in groups:
+			if group not in all_groups:
+				all_groups.append(group)
+
+	saved_groups = read_group_names("./data/group_data/") #loads all saved groups into a dictionary
+
+	for gid in all_groups: #check that all groups in current export exist in saved group name file
+		if int(gid) not in saved_groups: #if group exists in current export but not in saved name file
+			print("ERROR: ***GROUP "+gid+"*** NAME NOT SAVED!") #throw error
+			print("ENSURE ALL GROUP NAMES AND ID'S ARE SAVED IN 'data/group_data/names.csv'!")
+			error = True #report error
+			break
 
 	return error
 
@@ -973,21 +857,25 @@ def check_dates():
 # MAIN FUNCTION
 #======================================
 def main():
-	error = handle_report_folder()
+	error = check_reports() #check all pdfs are closed; removes all prev reports
 	if not error:
 
-		error = check_dates()
+		error = check_dates() #checks exports exist
 		if not error:
 
-			curr_directory, prev_directory = fetch_directories()
+			error = check_groups() #checks if all group names and ids are saved
+			if not error:
 
-			curr_sum_dict, curr_group_dict = fetch_dicts(curr_directory)
-			prev_sum_dict, prev_group_dict = fetch_dicts(prev_directory)
+				curr_directory, prev_directory = fetch_directories() #get directories from user exports
 
-			diff_sum_dict, diff_group_dict = fetch_diff_dicts(curr_group_dict, curr_sum_dict, prev_group_dict, prev_sum_dict)
+				curr_sum_dict, curr_group_dict = fetch_dicts(curr_directory) #get dicts from current export
+				prev_sum_dict, prev_group_dict = fetch_dicts(prev_directory) #get dicts from previous export
 
-			generate_group_pdf(curr_directory, prev_directory, curr_group_dict, diff_group_dict)
-			generate_sum_pdf(curr_directory, prev_directory, curr_sum_dict, diff_sum_dict)
+				diff_sum_dict, diff_group_dict = fetch_diff_dicts(curr_directory, curr_group_dict, curr_sum_dict, prev_group_dict, prev_sum_dict) #get diff dicts based on curr/prev dicts
+
+				generate_reports(curr_directory, prev_directory, curr_sum_dict, diff_sum_dict, curr_group_dict, diff_group_dict) #generate pdf reports
 
 
 main()
+
+
