@@ -204,6 +204,22 @@ def most_recent_date(d1, d2):
 	return new, old
 
 
+def get_active_size(directory):
+	active = 0
+	for user in directory.users:
+		if user.active:
+			active += 1
+	return active
+
+
+def get_percent_active(directory):
+	#returns percentage of active users of a directory
+
+	active = get_active_size(directory) #get size of active users
+	percent = round((active / len(directory.users)), 2) * 100 #get percentage of active/total users
+	return int(percent) #return int of float
+
+
 #======================================
 # PRIMARY FUNCTIONS
 #======================================
@@ -453,6 +469,8 @@ def generate_html(curr_directory, prev_directory, orig_dict, diff_dict, html_typ
 	name = "" #title for page
 	size = None #number of users
 	size_diff = None #difference of users from last report
+	active = None #percent of active users 
+	active_diff = None #difference of active users from last report
 	curr_group = None
 	prev_group = None
 
@@ -462,15 +480,19 @@ def generate_html(curr_directory, prev_directory, orig_dict, diff_dict, html_typ
 	html_name = "" #html template file to be loaded
 
 	date = curr_directory.current_date #date of report
+	prev_date = "N/A" #default if no previous report exists
 
 	if html_type == "sum": #if report is a user sum report
 		name = "User Sum Report" #change title
 		html_name = './data/html_template_sum.csv' #dictate sum template will be used
 
-		size = str(len(curr_directory.users)) #number of active users in entire directory
+		size = str(get_active_size(curr_directory)) #number of active users in entire directory
+		active = str(get_percent_active(curr_directory))
 		if prev_directory != None: #check if previous user export file exists
-			size_diff = len(curr_directory.users) - len(prev_directory.users) #get difference in size
-			date += '<br>Previous Report Date: ' + prev_directory.current_date #write last report date in html
+			size_diff = int(size) - get_active_size(prev_directory) #get difference in size
+			active_diff = int(active) - get_percent_active(prev_directory)
+
+			prev_date = prev_directory.current_date #write last report date in html
 
 	else: #if report is a group report
 		html_name = './data/html_template_group.csv' #load group template
@@ -478,10 +500,14 @@ def generate_html(curr_directory, prev_directory, orig_dict, diff_dict, html_typ
 		prev_group = get_group(prev_directory, html_type) #get group from last report if it exists
 
 		name = curr_group.name #title changes to group name
-		size = str(len(curr_group.users)) #number of users in group
+		size = str(get_active_size(curr_group)) #number of users in group
+		active = str(get_percent_active(curr_group))
 		if prev_group != None: #if group existed in last user export
-			date += '<br>Previous Report Date: ' + prev_directory.current_date
-			size_diff = len(curr_group.users) - len(prev_group.users)
+			prev_date = prev_directory.current_date
+			size_diff = int(size) - get_active_size(prev_group)
+			active_diff = int(active) - get_percent_active(prev_group) #difference in % of active users
+
+	active = active + '%'
 
 	template = "" #string used to hold all html code
 	with open(html_name, newline='') as csvfile: #writes code from template into string
@@ -491,10 +517,16 @@ def generate_html(curr_directory, prev_directory, orig_dict, diff_dict, html_typ
 				template += item
 
 	if size_diff != None: #writes change in number of users on report
-			if size_diff > 0:
-				size += '   (+'+str(size_diff)+')'
-			elif size_diff < 0:
-				size += '   ('+str(size_diff)+')'
+		if size_diff > 0:
+			size += '   (+'+str(size_diff)+')'
+		elif size_diff < 0:
+			size += '   ('+str(size_diff)+')'
+
+	if active_diff != None: #writes change in number of users on report
+		if active_diff > 0.0:
+			active += '   (+'+str(active_diff)+'%)'
+		elif active_diff < 0.0:
+			active += '   ('+str(active_diff)+'%)'
 	
 	categories = ['locations','industries','expertises','interests','stages','member_types'] #category tables in report
 	text_dict = {} #holds text for each table
@@ -564,7 +596,9 @@ def generate_html(curr_directory, prev_directory, orig_dict, diff_dict, html_typ
 	template = template.replace('[INSERT INDUSTRY 1 ENTRIES]', text_dict['industries_1'])
 	template = template.replace('[INSERT INDUSTRY 2 ENTRIES]', text_dict['industries_2'])
 	template = template.replace('[INSERT NUM USERS]', size)
-	template = template.replace('[INSERT DATE]', date)
+	template = template.replace('[INSERT PERCENT ACTIVE]', active)
+	template = template.replace('[INSERT CURRENT DATE]', date)
+	template = template.replace('[INSERT PREVIOUS DATE]', prev_date)
 
 	return template #return filled html string
 
@@ -877,5 +911,3 @@ def main():
 
 
 main()
-
-
