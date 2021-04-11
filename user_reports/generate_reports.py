@@ -7,6 +7,8 @@ from os import listdir
 from os.path import isfile, join
 
 
+
+
 #======================================
 # CLASSES 
 #======================================
@@ -201,6 +203,15 @@ def most_recent_date(d1, d2):
 	old = old[0]+'-'+old[1]+'-'+old[2]
 
 	return new, old
+
+
+def get_curr_date():
+	#Gets the most recent date in export list; only call if export existence has been confirmed (check_dates())
+	curr_date = get_dates("./data/user_exports/")[0];
+	year = curr_date[:6]
+	curr_date = curr_date[5:] + '-' + curr_date[:4]
+	curr_date = curr_date.replace('-','_')
+	return curr_date
 
 
 def get_active_size(directory):
@@ -442,21 +453,24 @@ def generate_pdf(html, gid, name, path):
 		'quiet': '',
 		}
 
+	curr_date = get_curr_date()
 
 
 	file = open("./data/html_report.html","w") #creates html files
 	file.write(html) #writes html content from string to files
 	file.close() #closes file
 
-	print("Generating " + name + " report...") #state pdf is being created
+	print("Generating " + name + " report...", end="") #state pdf is being created
 
 	if gid != None: #check if file is group report or sum report
 		name = name.replace(' ', '_') #format name
 		name = str(gid) + '_' + name #format name
 
-	output = path + name + ".pdf" #output name for file
+	output = path + name + '_[' + curr_date + ']' + ".pdf" #output name for file
 
 	pdfkit.from_file("./data/html_report.html", output, options) #create pdf from html
+
+	print("Done!")
 
 	os.remove("./data/html_report.html") #remove html file
 
@@ -483,7 +497,7 @@ def generate_html(curr_directory, prev_directory, orig_dict, diff_dict, html_typ
 
 	if html_type == "sum": #if report is a user sum report
 		name = "User Sum Report" #change title
-		html_name = './data/html_template_sum.csv' #dictate sum template will be used
+		html_name = './data/templates/html_template_sum.csv' #dictate sum template will be used
 
 		size = str(get_active_size(curr_directory)) #number of active users in entire directory
 		active = str(get_percent_active(curr_directory))
@@ -494,7 +508,7 @@ def generate_html(curr_directory, prev_directory, orig_dict, diff_dict, html_typ
 			prev_date = prev_directory.current_date #write last report date in html
 
 	else: #if report is a group report
-		html_name = './data/html_template_group.csv' #load group template
+		html_name = './data/templates/html_template_group.csv' #load group template
 		curr_group = get_group(curr_directory, html_type) #get current group from group id
 		prev_group = get_group(prev_directory, html_type) #get group from last report if it exists
 
@@ -605,10 +619,12 @@ def generate_html(curr_directory, prev_directory, orig_dict, diff_dict, html_typ
 def generate_reports(curr_directory, prev_directory, sum_dict, diff_sum_dict, group_dicts, diff_group_dict):
 	#parent function that generates sum and group reports
 	
+	curr_date = get_curr_date()
+
 	html = generate_html(curr_directory, prev_directory, sum_dict, diff_sum_dict, "sum") #get html string for sum report
 
 	file_name = "Sum_User_Report" #name for sum report
-	path = './reports/'
+	path = './reports/'+curr_date+'/'
 	generate_pdf(html, None, file_name, path) #generate pdf from sum html string
 
 	for group in curr_directory.groups: #repeat above process for all groups
@@ -619,7 +635,7 @@ def generate_reports(curr_directory, prev_directory, sum_dict, diff_sum_dict, gr
 		html = generate_html(curr_directory,prev_directory, group_dict, diff_dict, gid) #generate html string for single group
 
 		file_name = group.name
-		path = './reports/Group_Reports/'
+		path = './reports/'+curr_date+'/Group_Reports/'
 
 		generate_pdf(html, gid, file_name, path) #generate pdf from html string for group
 
@@ -803,16 +819,28 @@ def check_reports():
 
 	error = False
 
+	curr_date = get_curr_date()
+
+	sum_path = './reports/'+curr_date
+	group_path = './reports/'+curr_date+'/Group_Reports'
+
 	try:
 		os.mkdir('./reports') #create report folder if it does not exist
-		os.mkdir('./reports/Group_Reports') #create group report folder if it does not exist
+	except OSError as e:
+		pass #do not report error if folders already exist
+	try:
+		os.mkdir(sum_path)
+	except OSError as e:
+		pass #do not report error if folders already exist
+	try:
+		os.mkdir(group_path) #create group report folder if it does not exist
 	except OSError as e:
 		pass #do not report error if folders already exist
 
-	paths = ['./reports/', './reports/Group_Reports/'] #paths to delete pdfs from
+
+	paths = ['./reports/'+curr_date+'/', './reports/'+curr_date+'/Group_Reports/'] #paths to delete pdfs from
 
 	for path in paths:
-
 		files = [f for f in listdir(path) if isfile(join(path, f))]	#get all files in path
 		for file in files:
 			try:
@@ -833,12 +861,16 @@ def check_dates():
 	#returns an error if NO export files are found
 
 	error = False
-	path = "./data/user_exports/" #path to look for exports
-	dates = get_dates(path) #gets dates of files found
+	try:
+		path = "./data/user_exports/" #path to look for exports
+		dates = get_dates(path) #gets dates of files found
 
-	if len(dates) == 0: #if no files are found
-		print("ERROR: NO USER EXPORTS FOUND IN DATA FOLDER") #report error
-		error = True
+		if len(dates) == 0: #if no files are found
+			print("ERROR: NO USER EXPORTS FOUND IN DATA FOLDER") #report error
+			error = True
+
+	except OSError as e:
+		print("ERROR: path 'data/user_exports/' not found. To ensure full functionality of code, re-copy original 'data' folder from .zip file and place it back in 'user_reports' main folder.")
 
 	return error
 
@@ -890,23 +922,33 @@ def check_groups():
 # MAIN FUNCTION
 #======================================
 def main():
-	error = check_reports() #check all pdfs are closed; removes all prev reports
-	if not error:
 
+	try:
 		error = check_dates() #checks exports exist
 		if not error:
-
-			error = check_groups() #checks if all group names and ids are saved
+			error = check_reports() #check all pdfs are closed; removes all prev reports
 			if not error:
+				error = check_groups() #checks if all group names and ids are saved
+				if not error:
 
-				curr_directory, prev_directory = fetch_directories() #get directories from user exports
+					print("\n\n\nGenerating all reports...\n")
 
-				curr_sum_dict, curr_group_dict = fetch_dicts(curr_directory) #get dicts from current export
-				prev_sum_dict, prev_group_dict = fetch_dicts(prev_directory) #get dicts from previous export
+					curr_directory, prev_directory = fetch_directories() #get directories from user exports
 
-				diff_sum_dict, diff_group_dict = fetch_diff_dicts(curr_directory, curr_group_dict, curr_sum_dict, prev_group_dict, prev_sum_dict) #get diff dicts based on curr/prev dicts
+					curr_sum_dict, curr_group_dict = fetch_dicts(curr_directory) #get dicts from current export
+					prev_sum_dict, prev_group_dict = fetch_dicts(prev_directory) #get dicts from previous export
 
-				generate_reports(curr_directory, prev_directory, curr_sum_dict, diff_sum_dict, curr_group_dict, diff_group_dict) #generate pdf reports
+					diff_sum_dict, diff_group_dict = fetch_diff_dicts(curr_directory, curr_group_dict, curr_sum_dict, prev_group_dict, prev_sum_dict) #get diff dicts based on curr/prev dicts
+
+					generate_reports(curr_directory, prev_directory, curr_sum_dict, diff_sum_dict, curr_group_dict, diff_group_dict) #generate pdf reports
+	
+					print("\n All reports have been generated :)\n")
+
+	except OSError as e:
+		pass
+
+	input("\nPress 'Enter' to close window...")
+
 
 
 main()
