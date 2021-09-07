@@ -5,63 +5,43 @@ import pdfkit
 import pandas as pd
 from os import listdir
 from os.path import isfile, join
+from classes.User import User
+from classes.Group import Group
+from classes.Directory import Directory
+from classes.DesiredContent import DesiredContent
 
 #======================================
-# CLASSES 
+# MAIN FUNCTION
 #======================================
-class Directory:
-	# Directory is the main access point to all objects generated from User Exports
-	# Including User and Group objects that are used later to genereate the reports
+_desired_content = DesiredContent()
 
-	def __init__(self):
-		self.users = [] #holds user objects
-		self.groups = [] #holds group objects
-		self.group_names = {} #holds names of groups
-		self.categories = {}
-		self.categories['groups'] = []
-		self.categories['expertise'] = []
-		self.categories['industry'] = []
-		self.categories['interests'] = []
-		self.categories['resources'] = []
-		self.categories['stages'] = []
-		self.categories['member_types'] = []
-		self.current_date = '' #holds date of directory
+def main():
 
+	try:
+		error = check_dates() #checks exports exist
+		if not error:
+			error = check_reports() #check all pdfs are closed; removes all prev reports
+			if not error:
+				error = check_groups() #checks if all group names and ids are saved
+				if not error:
 
-class User:
-	# User objects are created for each user in the export file
-	# Holds selected information about a single user that is used in later reports
+					print("\n\n\nGenerating all reports...\n")
 
-	def __init__(self, uid, first_name, last_name, email, last_active, created, count, score, groups, expertise, industry, interests, resources, location, stages, active, member_types):
-		self.uid = uid #[STRING] user id
-		self.first_name = first_name
-		self.last_name = last_name
-		self.email = email
-		self.last_active = last_active #date profile was last active
-		self.created = created #date profile was created
-		self.count = int(count) # [INT] number of times signed in
-		self.score = int(score) # [INT] user activity score
-		self.categories = {}
-		self.categories['groups'] = groups
-		self.categories['expertise'] = expertise
-		self.categories['industry'] = industry
-		self.categories['interests'] = interests
-		self.categories['resources'] = resources
-		self.categories['stages'] = stages
-		self.categories['member_types'] = member_types
-		self.location = location #live location used in reports
-		self.active = active #tracks whether user has activated their account or not
-		
+					curr_directory, prev_directory = fetch_directories() #get directories from user exports
 
-class Group:
-	# Object used for single group in the platform
-	# Tracks name, group id, and users in each group
+					curr_sum_dict, curr_group_dict = fetch_dicts(curr_directory) #get dicts from current export
+					prev_sum_dict, prev_group_dict = fetch_dicts(prev_directory) #get dicts from previous export
 
-	def __init__(self, gid, name):
-		self.gid = gid #group id
-		self.name = name 
-		self.users = [] #holds user objects for users in each group
+					diff_sum_dict, diff_group_dict = fetch_diff_dicts(curr_directory, curr_group_dict, curr_sum_dict, prev_group_dict, prev_sum_dict) #get diff dicts based on curr/prev dicts
 
+					generate_reports(curr_directory, prev_directory, curr_sum_dict, diff_sum_dict, curr_group_dict, diff_group_dict) #generate pdf reports
+	
+					print("\n All reports have been generated :)\n")
+
+	except OSError as e:
+		pass
+
+	input("\nPress 'Enter' to close window...")
 
 #======================================
 # HELPER FUNCTIONS
@@ -211,22 +191,6 @@ def get_curr_date():
 	return curr_date
 
 
-def get_active_size(directory):
-	active = 0
-	for user in directory.users:
-		if user.active:
-			active += 1
-	return active
-
-
-def get_percent_active(directory):
-	#returns percentage of active users of a directory
-
-	active = get_active_size(directory) #get size of active users
-	percent = round((active / len(directory.users)), 2) * 100 #get percentage of active/total users
-	return int(percent) #return int of float
-
-
 #======================================
 # PRIMARY FUNCTIONS
 #======================================
@@ -279,20 +243,6 @@ def read_group_names(path):
 			names[gid] = name #save data to dictionary
 
 	return names
-
-
-def fill_directory(directory, category, data):
-	#fills specified directory dictionary with given data
-
-	filtered_data = [] #ensures returned data are not duplicates 
-	for item in data: 
-		if item == 'Outoor Recreation': #corrects spelling
-			item = 'Outdoor Recreation'
-		if item not in directory.categories[category]: #adds new item to directory dictionary
-			directory.categories[category].append(item)
-		if item not in filtered_data: #adds new item to returned list
-			filtered_data.append(item)
-	return filtered_data #returns non-duplicated data
 
 
 def read_users(path, directory):
@@ -380,19 +330,19 @@ def read_users(path, directory):
 						fixed_list = fix_list(row[index].split(","))
 						if (field == "SubNetworks:Title") and ("Undefined" in fixed_list):
 							fixed_list.remove("Undefined")
-						entry = fill_directory(directory, list_categories.pop(0), fixed_list)
+						entry = directory.fill_directory(list_categories.pop(0), fixed_list)
 
 					else: #data needs no formatting and can be saved directly
 						entry = row[index]
 
 			user_data[keys[i]] = entry #saves entry data to user data dictionary
 
-		active = False
 		if int(user_data["count"]) > 0: #if user has signed in at least once...
 			active = True #they are considered an active user
+		else:
+			active = False
+
 		user_data["active"] = active
-
-
 
 		#Code below correctly formats a user's location
 		location = "NO RECORDED LOCATION" #defualt location
@@ -496,11 +446,11 @@ def generate_html(curr_directory, prev_directory, orig_dict, diff_dict, html_typ
 		name = "User Sum Report" #change title
 		html_name = './data/templates/html_template_sum.csv' #dictate sum template will be used
 
-		size = str(get_active_size(curr_directory)) #number of active users in entire directory
-		active = str(get_percent_active(curr_directory))
+		size = str(curr_directory.get_active_size()) #number of active users in entire directory
+		active = str(curr_directory.get_percent_active())
 		if prev_directory != None: #check if previous user export file exists
-			size_diff = int(size) - get_active_size(prev_directory) #get difference in size
-			active_diff = int(active) - get_percent_active(prev_directory)
+			size_diff = int(size) - prev_directory.get_active_size() #get difference in size
+			active_diff = int(active) - prev_directory.get_percent_active()
 
 			prev_date = prev_directory.current_date #write last report date in html
 
@@ -510,12 +460,12 @@ def generate_html(curr_directory, prev_directory, orig_dict, diff_dict, html_typ
 		prev_group = get_group(prev_directory, html_type) #get group from last report if it exists
 
 		name = curr_group.name #title changes to group name
-		size = str(get_active_size(curr_group)) #number of users in group
-		active = str(get_percent_active(curr_group))
+		size = str(curr_group.get_active_size()) #number of users in group
+		active = str(curr_group.get_percent_active())
 		if prev_group != None: #if group existed in last user export
 			prev_date = prev_directory.current_date
-			size_diff = int(size) - get_active_size(prev_group)
-			active_diff = int(active) - get_percent_active(prev_group) #difference in % of active users
+			size_diff = int(size) - prev_group.get_active_size()
+			active_diff = int(active) - prev_group.get_percent_active() #difference in % of active users
 
 	active = active + '%'
 
@@ -700,18 +650,24 @@ def create_dict(data):
 				locations[location] += 1
 				
 			for industry in user.categories['industry']:
+				if industry not in _desired_content.industries:
+					continue
 				if industry not in industries:
 					industries[industry] = 1
 				else:
 					industries[industry] += 1
 			
 			for expertise in user.categories['expertise']:
+				if expertise not in _desired_content.expertise:
+					continue
 				if expertise not in expertises:
 					expertises[expertise] = 1
 				else:
 					expertises[expertise] += 1
 
 			for interest in user.categories['interests']:
+				if interest not in _desired_content.interests:
+					continue
 				if interest not in interests:
 					interests[interest] = 1
 				else:
@@ -913,39 +869,6 @@ def check_groups():
 			break
 
 	return error
-
-
-#======================================
-# MAIN FUNCTION
-#======================================
-def main():
-
-	try:
-		error = check_dates() #checks exports exist
-		if not error:
-			error = check_reports() #check all pdfs are closed; removes all prev reports
-			if not error:
-				error = check_groups() #checks if all group names and ids are saved
-				if not error:
-
-					print("\n\n\nGenerating all reports...\n")
-
-					curr_directory, prev_directory = fetch_directories() #get directories from user exports
-
-					curr_sum_dict, curr_group_dict = fetch_dicts(curr_directory) #get dicts from current export
-					prev_sum_dict, prev_group_dict = fetch_dicts(prev_directory) #get dicts from previous export
-
-					diff_sum_dict, diff_group_dict = fetch_diff_dicts(curr_directory, curr_group_dict, curr_sum_dict, prev_group_dict, prev_sum_dict) #get diff dicts based on curr/prev dicts
-
-					generate_reports(curr_directory, prev_directory, curr_sum_dict, diff_sum_dict, curr_group_dict, diff_group_dict) #generate pdf reports
-	
-					print("\n All reports have been generated :)\n")
-
-	except OSError as e:
-		pass
-
-	input("\nPress 'Enter' to close window...")
-
 
 
 main()
