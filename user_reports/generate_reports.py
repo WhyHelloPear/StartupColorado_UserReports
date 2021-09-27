@@ -80,7 +80,6 @@ def get_index(categories, category):
 
 def add_group_member(directory, user, gid):
 	#adds user object to a group object's member list
-
 	gid = int(gid)
 	group = get_group(directory, gid) #gets group object from group id
 	if group == None: #if group has not been created yet...
@@ -380,7 +379,6 @@ def read_users(path, directory):
 			user_data["member_types"]
 		)
 		users.append(user) #adds user object to list
-
 		for gid in user_data["groups"]: #if user is in group, add user to saved group
 			add_group_member(directory, user, gid)
 
@@ -639,6 +637,13 @@ def create_dict(data):
 	stages = {}
 	member_types = {}
 
+	for industry in _desired_content.industries:
+		industries[industry] = 0
+	for expertise in _desired_content.expertise:
+		expertises[expertise] = 0
+	for interest in _desired_content.interests:
+		interests[interest] = 0
+
 	for user in data.users: #iterate over every user
 
 		if user.active: #only record stats for active users
@@ -652,8 +657,6 @@ def create_dict(data):
 			for industry in user.categories['industry']:
 				if industry not in _desired_content.industries:
 					continue
-				if industry not in industries:
-					industries[industry] = 1
 				else:
 					industries[industry] += 1
 			
@@ -662,8 +665,6 @@ def create_dict(data):
 					expertise = "Financial"
 				if expertise not in _desired_content.expertise:
 					continue
-				if expertise not in expertises:
-					expertises[expertise] = 1
 				else:
 					expertises[expertise] += 1
 
@@ -672,8 +673,6 @@ def create_dict(data):
 					interest = "Financial"
 				if interest not in _desired_content.interests:
 					continue
-				if interest not in interests:
-					interests[interest] = 1
 				else:
 					interests[interest] += 1
 			
@@ -694,7 +693,7 @@ def create_dict(data):
 					member_types[member_type] = 1
 				else:
 					member_types[member_type] += 1 
-				
+	
 	#sort and store all sub-dictionaries into parent dictionary that will be returned
 	data_dict["locations"] = dict(sorted(locations.items(), key=lambda item:item[1], reverse=True))
 	data_dict["industries"] = dict(sorted(industries.items(), key=lambda item:item[1], reverse=True))
