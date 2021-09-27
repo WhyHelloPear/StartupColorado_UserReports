@@ -658,6 +658,8 @@ def create_dict(data):
 					industries[industry] += 1
 			
 			for expertise in user.categories['expertise']:
+				if "Financial" in expertise:
+					expertise = "Financial"
 				if expertise not in _desired_content.expertise:
 					continue
 				if expertise not in expertises:
@@ -666,6 +668,8 @@ def create_dict(data):
 					expertises[expertise] += 1
 
 			for interest in user.categories['interests']:
+				if "Financial" in interest:
+					interest = "Financial"
 				if interest not in _desired_content.interests:
 					continue
 				if interest not in interests:
@@ -699,7 +703,6 @@ def create_dict(data):
 	data_dict["resources"] = dict(sorted(resources.items(), key=lambda item:item[1], reverse=True))
 	data_dict["stages"] = dict(sorted(stages.items(), key=lambda item:item[1], reverse=True))
 	data_dict["member_types"] = dict(sorted(member_types.items(), key=lambda item:item[1], reverse=True))
-
 	return data_dict #return parent dict
 
 
