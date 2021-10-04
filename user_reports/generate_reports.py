@@ -396,6 +396,7 @@ def generate_pdf(html, gid, name, path):
 		'margin-bottom': '0in',
 		'margin-left': '0in',
 		'quiet': '',
+		'enable-local-file-access:':'',
 		}
 
 	curr_date = get_curr_date()
