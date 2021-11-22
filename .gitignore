@@ -1,8 +1,5 @@
-
-user_reports/html_report.html
-user_reports/data/html_report.html
-user_reports/User_Reports.zip
-user_reports/generate_reports.exe
-user_reports/data/generate_reports.exe
-user_reports/classes/__pycache__
-
+data/html_report.html
+generate_reports.exe
+classes/__pycache__
+reports/*
+venv/*
