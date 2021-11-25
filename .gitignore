@@ -1,4 +1,5 @@
 data/html_report.html
+data/user_exports/*
 generate_reports.exe
 classes/__pycache__
 reports/*
